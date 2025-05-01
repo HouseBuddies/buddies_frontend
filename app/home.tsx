@@ -1,4 +1,5 @@
-import { SafeAreaView, ScrollView, Text, TouchableOpacity, View, Image, FlatList } from 'react-native';
+import { useAuth } from "@/context/AuthContext";
+import { FlatList, Image, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 // Mock data for rental properties with owner information and avatars
 const rentalProperties = [
@@ -219,6 +220,8 @@ const MapVisualization = () => {
 };
 
 const HomePage = () => {
+  const { token } = useAuth();
+
     return (
         <SafeAreaView className="flex-1 bg-gray-100">
             <ScrollView className="flex-grow p-5">

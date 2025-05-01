@@ -1,18 +1,21 @@
+import { useAuth } from "@/context/AuthContext";
 import { sign_in } from "@/data";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { useState } from "react";
 import {
-    Alert,
-    Image,
-    Keyboard,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View
+  Alert,
+  Image,
+  Keyboard,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
 } from "react-native";
 
+
 const LoginPage = () => {
+  const { setToken } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -38,10 +41,9 @@ const LoginPage = () => {
         Alert.alert("Login Failed", "Invalid email or password.");
         return;
       }
-
       const data = await response.data;
-
-      Alert.alert("Success", "Logged in successfully!");
+      await setToken(data.user.token);
+      router.push("/home");
     } catch (error) {
       Alert.alert("Login Failed", "Something went wrong.");
       console.error(error);
