@@ -1,6 +1,7 @@
-import { Alert, Text, TextInput, View, TouchableOpacity, Image, Button } from "react-native";
+import { sign_in } from "@/data";
 import { Link } from "expo-router";
 import { useState } from "react";
+import { Alert, Button, Image, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 const LoginPage = () => {
     const [email, setEmail] = useState("");
@@ -15,6 +16,16 @@ const LoginPage = () => {
                 Alert.alert("Missing fields", "Please enter both email and password.");
                 return;
             }            
+
+            const response = await sign_in(email, password);
+            if (response.status !== 200) {
+                Alert.alert("Login Failed", "Invalid email or password.");
+                return;
+            }
+
+            const data = await response.json();
+
+            console.log("Login successful:", data);
 
             Alert.alert("Success", "Logged in successfully!");
         } catch (error) {
@@ -45,7 +56,7 @@ const LoginPage = () => {
                     secureTextEntry
                     value={password}
                 />
-                <Link href="/forgot-password" className="text-gray-700 text-white font-semibold rounded-lg my-4">Forgot Password?</Link>
+                <Link href="/" className="text-gray-700 text-white font-semibold rounded-lg my-4">Forgot Password?</Link>
                 <Button onPress={login} color="gray" disabled={isLoading} title={isLoading ? "Loading..." : "Login"} />
                 <Text className="text-gray-700 text-center mt-4">Not a member? <Link href="/register" className="font-bold">Register now</Link></Text>
                 <View className="border-b border-gray-300 my-6" />
