@@ -1,13 +1,12 @@
 import { API } from '../api';
 
 export async function sign_in(email: string, password: string) {
-  console.log(email, password);
   const response = await API.post('/auth/sign_in', {
     email,
     password,
   });
-  console.log(response, "response");
-  return response.data;
+
+  return response;
 }
 
 export async function sign_up(name: string, email: string, password: string) {
