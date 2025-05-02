@@ -11,7 +11,7 @@ const API_URL = Constants.expoConfig?.extra?.apiUrl
 const App = () => {
     const { token } = useAuth();
     const { id } = useLocalSearchParams();
-    const [house, setHouse] = useState<{ image: string,  rent: number, address : string, owner : any } | null>(null);
+    const [house, setHouse] = useState<{ image: string,  min_rent: number, max_rent: number, address : string, owner : any, tags : string[]} | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -52,24 +52,19 @@ const App = () => {
             </TouchableOpacity>
             
           </View>
-          
-          {/* Pagination Dots */}
-          <View className="absolute bottom-4 w-full flex-row justify-center space-x-2">
-              
-          </View>
         </View>
         
         {/* Property Details */}
         <View className="p-4">
           <View className="flex-row justify-between items-center">
             <Text className="text-xl font-semibold">{formatAddress(house?.address || "")}</Text>
-            <Text className="text-lg">{house?.rent} €</Text>
+            <Text className="text-lg">{house?.min_rent} € - {house?.max_rent} €</Text>
           </View>
           
           {/* Profile Section */}
           <View className="flex-row items-center mt-4">
             <Image 
-              source={{ uri: 'https://randomuser.me/api/portraits/men/32.jpg' }} 
+              source={{ uri: house?.owner.photo }} 
               className="w-12 h-12 rounded-full"
             />
             <Text className="ml-3 text-lg">{house?.owner.name}</Text>
@@ -79,7 +74,7 @@ const App = () => {
           <View className="mt-6">
             <Text className="text-xl mb-3">Interesses</Text>
             <View className="flex-row space-x-2">
-              {['Rock', 'Indie', 'Metal'].map((interest, index) => (
+              {house?.tags.map((interest, index) => (
                 <View key={index} className="py-2 px-4 border border-gray-300 rounded-full">
                   <Text>{interest}</Text>
                 </View>

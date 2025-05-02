@@ -24,15 +24,20 @@ type PropertyCardProps = {
   randomHouseId: number;
   randomUserId: number;
   image: string;
+  ownerPhoto: string;
 };
 
 const API_URL = Constants.expoConfig?.extra?.apiUrl
 
-const PropertyCard = ({ id, location, ownerName, minRent, maxRent, randomUserId, image }: PropertyCardProps) => {
+const PropertyCard = ({ id, location, ownerName, ownerPhoto, minRent, maxRent, randomUserId, image }: PropertyCardProps) => {
   const houseImage = API_URL.replace("/api", "") + image;
-  
+
   return (
-    <View className="bg-white rounded-3xl shadow-2xl mb-8 overflow-hidden" onTouchEnd={() => router.push(`/house/${id}`)}>
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={() => router.push(`/house/${id}`)}
+      className="bg-white rounded-3xl shadow-2xl mb-8 overflow-hidden"
+    >
       {/* Property Image */}
       <View className="relative">
         <View className="h-64 bg-gray-300">
@@ -56,15 +61,16 @@ const PropertyCard = ({ id, location, ownerName, minRent, maxRent, randomUserId,
         {/* Profile Section */}
         <View className="flex-row items-center mt-2">
           <Image
-            source={{ uri: `https://randomuser.me/api/portraits/men/${randomUserId}.jpg` }}
+            source={{ uri: ownerPhoto }}
             className="w-10 h-10 rounded-full"
           />
           <Text className="ml-3 text-lg">{ownerName}</Text>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
+
 
 const App = () => {
   const { token } = useAuth();
@@ -118,6 +124,7 @@ const App = () => {
             minRent={house.min_rent}
             maxRent={house.max_rent}
             ownerName={house.owner.name}
+            ownerPhoto={house.owner.photo}
             randomHouseId={house.randomHouseId}
             randomUserId={house.randomUserId}
             image={house.image}
