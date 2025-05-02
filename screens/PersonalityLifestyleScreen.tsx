@@ -28,7 +28,7 @@ export default function PersonalityLifestyleScreen({ navigation, route }: { navi
       dietaryRestrictions,
     }
 
-    navigation.navigate("Summary", {
+    navigation.navigate("Biography", {
       ...route.params,
       personalityLifestyle,
     })

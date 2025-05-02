@@ -79,12 +79,22 @@ export default function SummaryScreen({ navigation, route }) {
     { label: "Occupation", value: formatName(demographics?.occupation) || "Not specified" },
   ]
 
-  const livingPreferencesItems = [
-    { label: "City", value: livingPreferences?.neighborhood || "Not specified" },
-    { label: "Max Rent", value: livingPreferences?.maxRent ? `${livingPreferences.maxRent} €` : "Not specified" },
-    { label: "Move-in Date", value: formatDate(livingPreferences?.moveInDate) },
-    { label: "Work Schedule", value: formatName(livingPreferences?.workSchedule) || "Not specified" },
-  ]
+  // Special renderer for biography which is a text field
+  const renderBiography = (title, bioContent) => {
+    if (!bioContent) return null;
+    
+    // Handle both string and object formats
+    const bioText = typeof bioContent === 'object' ? bioContent.text : bioContent;
+    
+    return (
+      <View className="mb-6">
+        <Text className="text-lg font-bold text-gray-800 mb-2">{title}</Text>
+        <View className="bg-gray-100 rounded-lg p-4">
+          <Text className="text-gray-800">{bioText}</Text>
+        </View>
+      </View>
+    );
+  };
 
   const personalityItems = [
     {
@@ -120,18 +130,13 @@ export default function SummaryScreen({ navigation, route }) {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <ScrollView className="flex-1 px-6 pt-4">
-        <View className="items-center mb-8">
-          <View className="w-20 h-20 rounded-full bg-blue-100 items-center justify-center mb-4">
-            <Text className="text-4xl">🏠</Text>
-          </View>
-          <Text className="text-2xl font-bold text-gray-800">Profile Summary</Text>
-          <Text className="text-gray-600">Your roommate preferences</Text>
-        </View>
-
-        {renderSection("Basic Demographics", demographicsItems)}
-        {renderSection("Living Preferences", livingPreferencesItems)}
-        {renderSection("Personality & Lifestyle", personalityItems)}
+      <ScrollView className="flex-1 px-6 pt-6">
+        <Text className="text-2xl font-bold text-gray-800 mb-6">Your Profile Summary</Text>
+        
+        {renderSection("Demographics", demographics)}
+        {renderSection("Living Preferences", livingPreferences)}
+        {renderSection("Personality & Lifestyle", personalityLifestyle)}
+        {renderBiography("Biography", biography)}
       </ScrollView>
 
       <View className="px-6 py-4 border-t border-gray-200">
@@ -139,9 +144,9 @@ export default function SummaryScreen({ navigation, route }) {
           className={`rounded-2xl p-5 items-center bg-primary`}
           onPress={() => sendPreferences().then(router.push("/home"))}
         >
-          <Text className="text-white font-bold text-lg">Let's do this!  🎉</Text>
+          <Text className="text-white font-bold text-lg">Submit Profile</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
-  )
+  );
 }

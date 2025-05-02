@@ -5,6 +5,7 @@ import DemographicsScreen from "@/screens/DemographicsScreen"
 import LivingPreferencesScreen from "@/screens/LivingPreferencesScreen"
 import PersonalityLifestyleScreen from "@/screens/PersonalityLifestyleScreen"
 import SummaryScreen from "@/screens/SummaryScreen"
+import BiographyScreen from "@/screens/BiographyScreen"
 
 const Stack = createNativeStackNavigator()
 
@@ -28,6 +29,8 @@ export default function App() {
           component={PersonalityLifestyleScreen}
           options={{ title: "Personality & Lifestyle" }}
         />
+        <Stack.Screen
+          name= "Biography" component={BiographyScreen}/>
         <Stack.Screen name="Summary" component={SummaryScreen} options={{ title: "Your Profile Summary" }} />
       </Stack.Navigator>
     </>
@@ -63,6 +66,14 @@ function WelcomeScreen({ navigation }: { navigation: any }) {
             <View>
               <Text className="text-lg font-semibold text-gray-800">Personality & Lifestyle</Text>
               <Text className="text-gray-600">Habits, preferences, compatibility factors</Text>
+            </View>
+          </View>
+
+          <View className="flex-row items-center mb-4">
+            <Text className="text-3xl mr-4">💬</Text>
+            <View>
+              <Text className="text-lg font-semibold text-gray-800">About Yourself</Text>
+              <Text className="text-gray-600">Your vibe, your space, tell us about yourself,</Text>
             </View>
           </View>
         </View>
