@@ -45,6 +45,7 @@ export default {
     },
     extra: {
       apiUrl: process.env.API_URL,
+      googleApiKey: process.env.GOOGLE_API_KEY,
     },
   },
 };

@@ -1,106 +1,229 @@
 import { useAuth } from '@/context/AuthContext';
 import { showHouse } from '@/data/houses/houses';
 import Constants from 'expo-constants';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Image, SafeAreaView, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Dimensions,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
 
-const API_URL = Constants.expoConfig?.extra?.apiUrl
-
+const API_URL = Constants.expoConfig?.extra?.apiUrl;
+const { width } = Dimensions.get('window');
 
 const App = () => {
-    const { token } = useAuth();
-    const { id } = useLocalSearchParams();
-    const [house, setHouse] = useState<{ image: string,  rent: number, address : string, owner : any } | null>(null);
+  const { token } = useAuth();
+  const { id } = useLocalSearchParams();
+  const [house, setHouse] = useState<{
+    image: string;
+    rent: number;
+    address: string;
+    owner: any;
+  } | null>(null);
 
-    useEffect(() => {
-        const fetchData = async () => {
-        const response = await showHouse(id.toString(), token ?? "");
+  const apiKey = Constants.expoConfig?.extra?.googleApiKey;
+  
+  // Custom map dimensions - adjust these values as needed
+  const mapHeight = 270; // Height in pixels
+  const mapWidth = width - 32; // Width based on screen size minus padding
+  const mapSize = `${Math.round(mapWidth)}x${mapHeight}`;
+  
+  // Map configuration
+  const circleRadius = 300; // Radius in meters
+  const circleColor = "0x8AADF488"; // Circle color with alpha (RGBA)
+  const circleBorder = "0x3B82F6"; // Border color for the circle
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await showHouse(id.toString(), token ?? '');
         setHouse(response.data);
-        };
+      } catch (error) {
+        console.error("Error fetching house data:", error);
+      }
+    };
 
-        fetchData();
-    }, []);
+    fetchData();
+  }, [id, token]);
 
-    function formatAddress(address: string) {
-        const parts = address.split(' ');
-        return parts.slice(-2).join(' ');
-    } 
+  function formatAddress(address: string) {
+    if (!address) return "";
+    const parts = address.split(' ');
+    return parts.slice(-2).join(' ');
+  }
 
-    const houseImage = API_URL.replace("/api", "") + house?.image;
+  const houseImage = house?.image ? API_URL.replace('/api', '') + house.image : '';
+
+  // Create static map URL with only a circle (no marker)
+  const getStaticMapUrl = () => {
+    if (!house?.address || !apiKey) return '';
+    
+    // For a simple radius circle without a pin
+    return `https://maps.googleapis.com/maps/api/staticmap?`+
+           `center=${encodeURIComponent(house.address)}`+
+           `&zoom=15`+
+           `&size=${mapSize}`+
+           `&scale=2`+ // For better resolution on high-density screens
+           // Circle with fill color
+           `&path=fillcolor:${circleColor}`+
+           `%7Ccolor:${circleBorder}`+
+           `%7Cweight:1`+
+           `%7Ccenter:${encodeURIComponent(house.address)}`+
+           `%7Cradius:${circleRadius}`+
+           `&key=${apiKey}`;
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar barStyle="dark-content" />
-      
+
       <ScrollView className="flex-1">
         {/* Property Image Section */}
-        <View className="relative h-80 ">
-            <Image
-                source={{ uri: houseImage }}
-                className="w-full h-full"
-            />
+        <View className="relative h-80">
+          {houseImage !== '' && (
+            <Image source={{ uri: houseImage }} className="w-full h-full" />
+          )}
           <View className="absolute w-full flex-row justify-between p-4">
-            <TouchableOpacity>
-              <Text className="text-3xl text-gray-700">✕</Text>
+            <TouchableOpacity onPress={() => router.back()}>
+              <Text className="text-3xl text-gray-700">X</Text>
             </TouchableOpacity>
             <TouchableOpacity>
               <Text className="text-3xl text-gray-700">★</Text>
-
-            
             </TouchableOpacity>
-            
-          </View>
-          
-          {/* Pagination Dots */}
-          <View className="absolute bottom-4 w-full flex-row justify-center space-x-2">
-              
           </View>
         </View>
-        
+
         {/* Property Details */}
         <View className="p-4">
           <View className="flex-row justify-between items-center">
-            <Text className="text-xl font-semibold">{formatAddress(house?.address || "")}</Text>
+            <Text className="text-xl font-semibold">
+              {formatAddress(house?.address || '')}
+            </Text>
             <Text className="text-lg">{house?.rent} €</Text>
           </View>
-          
+
           {/* Profile Section */}
-          <View className="flex-row items-center mt-4">
-            <Image 
-              source={{ uri: 'https://randomuser.me/api/portraits/men/32.jpg' }} 
-              className="w-12 h-12 rounded-full"
-            />
-            <Text className="ml-3 text-lg">{house?.owner.name}</Text>
-          </View>
-          
+          {house?.owner && (
+            <View className="flex-row items-center mt-4">
+              <Image
+                source={{
+                  uri: 'https://randomuser.me/api/portraits/men/32.jpg'
+                }}
+                className="w-12 h-12 rounded-full"
+              />
+              <Text className="ml-3 text-lg">{house.owner.name}</Text>
+            </View>
+          )}
+
           {/* Interests Section */}
           <View className="mt-6">
             <Text className="text-xl mb-3">Interesses</Text>
             <View className="flex-row space-x-2">
               {['Rock', 'Indie', 'Metal'].map((interest, index) => (
-                <View key={index} className="py-2 px-4 border border-gray-300 rounded-full">
+                <View
+                  key={index}
+                  className="py-2 px-4 border border-gray-300 rounded-full"
+                >
                   <Text>{interest}</Text>
                 </View>
               ))}
             </View>
           </View>
-          
-          {/* Address Section */}
+
+          {/* Address Section with Static Map */}
           <View className="mt-6">
             <Text className="text-xl mb-3">Morada</Text>
-            <View className="h-40 bg-gray-200 rounded-lg overflow-hidden">
-              <Image 
-                source={{ uri: 'https://maps.googleapis.com/maps/api/staticmap?center=Groveland,California&zoom=13&size=600x300&maptype=roadmap&key=YOUR_API_KEY' }} 
-                className="w-full h-full"
-                resizeMode="cover"
-              />
+            {house?.address && apiKey && (
+              <View style={{ 
+                height: mapHeight-30, 
+                width: mapWidth, 
+                backgroundColor: '#e5e5e5', 
+                borderRadius: 8, 
+                overflow: 'hidden'
+              }}>
+                <Image
+                  source={{ uri: getStaticMapUrl() }}
+                  style={{ width: '100%', height: '100%' }}
+                  resizeMode="cover"
+                />
+                <View className="absolute p-16 bg-blue-300/40 border border-2 border-blue-400 rounded-full mx-auto top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                </View>
+              </View>
+            )}
+
+
+          </View>
+
+                    {/* Property Features Section */}
+          <View className="mt-6">
+          <Text className="text-xl mb-3">Características específicas</Text>
+          <View className="space-y-2">
+            {[
+              '58 m² área bruta',
+              'T1',
+              '1 casa de banho',
+              'Varanda',
+              'Lugar de garagem incluído no preço',
+              'Segunda mão/bom estado',
+              'Armários embutidos',
+              'Orientação Sul',
+              'Mobilado e cozinha equipada',
+              'Aquecimento individual: Elétrico',
+            ].map((item, index) => (
+              <View key={index} className="flex-row items-center">
+                <Text className="text-base">• {item}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Two-Column Section */}
+          <View className="flex-row mt-6">
+            {/* Left Column */}
+            <View className="flex-1 pr-2">
+              <Text className="text-xl mb-3">Equipamento</Text>
+              <View className="space-y-2">
+                <View className="flex-row items-center">
+                  <Text className="text-base">• Ar condicionado</Text>
+                </View>
+              </View>
+
+              <View className="mt-6">
+                <Text className="text-xl mb-3">Prédio</Text>
+                <View className="space-y-2">
+                  <View className="flex-row items-center">
+                    <Text className="text-base">• 1º andar</Text>
+                  </View>
+                  <View className="flex-row items-center">
+                    <Text className="text-base">• Com elevador</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+
+            {/* Right Column */}
+            <View className="flex-1 pl-2">
+              <Text className="text-xl mb-3">Certificado energético</Text>
+              <View className="space-y-2">
+                <View className="flex-row items-center">
+                  <Text className="text-base">• Classe energética: A+</Text>
+                </View>
+              </View>
             </View>
           </View>
         </View>
+
+          </View>
+        
       </ScrollView>
+
       
+
       {/* Bottom Navigation */}
       <View className="flex-row justify-between items-center p-4 border-t border-gray-200">
         <TouchableOpacity className="items-center">
