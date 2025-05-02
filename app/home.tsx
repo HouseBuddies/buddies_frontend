@@ -11,7 +11,6 @@ import {
   Animated,
   Dimensions,
   Image,
-  PanResponder,
   RefreshControl,
   SafeAreaView,
   StatusBar,
@@ -23,7 +22,6 @@ import {
 import MapView, { Marker } from 'react-native-maps';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const PULL_THRESHOLD = 100;
 const MAP_HEIGHT = SCREEN_HEIGHT;
 const DEFAULT_LAT = 41.5454;
 const DEFAULT_LNG = -8.4265;
@@ -68,7 +66,35 @@ interface PropertyCardProps {
   longitude?: number;
 }
 
+interface SearchBarProps {
+  onMapToggle: () => void;
+  isMapVisible: boolean;
+}
+
 const API_URL = Constants.expoConfig?.extra?.apiUrl || '';
+
+// SearchBar Component
+const SearchBar = ({ onMapToggle, isMapVisible }: SearchBarProps) => {
+  return (
+    <View className="px-6 py-3 bg-gray-50 z-10">
+      <View className="flex-row items-center bg-white rounded-full border-2 border-gray-200 overflow-hidden">
+        <TextInput
+          placeholder="Search location, tags, anything ..."
+          className="flex-1 text-base py-4 px-6"
+        />
+        <TouchableOpacity 
+          className="bg-blue-500 p-3 rounded-full mr-1"
+          onPress={onMapToggle}
+          accessibilityLabel={isMapVisible ? "Hide map" : "Show map"}
+        >
+          <View className="w-6 h-6 items-center justify-center">
+            <Text className="text-white text-xl">🌐</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
 
 const PropertyCard = ({ 
   id, 
@@ -143,7 +169,7 @@ const HomeScreen = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isPulled, setIsPulled] = useState(false);
+  const [isMapVisible, setIsMapVisible] = useState(false);
 
   const scrollY = useRef(new Animated.Value(0)).current;
   const pullDownAnim = useRef(new Animated.Value(0)).current;
@@ -280,7 +306,6 @@ const HomeScreen = () => {
   
       const success = isFavorite ? response.data?.value : response.data?.id;
       
-
       if (!success) {
         setFavorites(previousFavorites);
         Alert.alert('Error', 'Failed to update favorites');
@@ -290,71 +315,26 @@ const HomeScreen = () => {
       Alert.alert('Error', 'An error occurred while updating favorites');
     }
   }, [token, user, favorites]);
-  
-  
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (evt, gestureState) => {
-        if (isPulled) return Math.abs(gestureState.dy) > 5;
-        return scrollY._value <= 0 && gestureState.dy > 5;
-      },
-      onPanResponderMove: (evt, gestureState) => {
-        if (isPulled) {
-          if (gestureState.dy < 0) {
-            const pullDistance = Math.max(0, MAP_HEIGHT + gestureState.dy);
-            pullDownAnim.setValue(pullDistance);
-            if (pullDistance < PULL_THRESHOLD) setIsPulled(false);
-          }
-        } else if (scrollY._value <= 0 && gestureState.dy > 0) {
-          const pullDistance = Math.min(gestureState.dy * 0.5, MAP_HEIGHT);
-          pullDownAnim.setValue(pullDistance);
-          if (pullDistance >= PULL_THRESHOLD) setIsPulled(true);
-        }
-      },
-      onPanResponderRelease: (evt, gestureState) => {
-        if (isPulled) {
-          if (gestureState.dy < -20) {
-            Animated.spring(pullDownAnim, {
-              toValue: 0,
-              useNativeDriver: false,
-              tension: 50,
-              friction: 7
-            }).start(() => setIsPulled(false));
-          } else {
-            Animated.spring(pullDownAnim, {
-              toValue: MAP_HEIGHT,
-              useNativeDriver: false,
-            }).start();
-          }
-        } else {
-          if (pullDownAnim._value >= PULL_THRESHOLD) {
-            Animated.spring(pullDownAnim, {
-              toValue: MAP_HEIGHT,
-              useNativeDriver: false,
-            }).start(() => setIsPulled(true));
-          } else {
-            Animated.spring(pullDownAnim, {
-              toValue: 0,
-              useNativeDriver: false,
-            }).start();
-          }
-        }
-      },
-    })
-  ).current;
-
-  const handleCollapseHeader = () => {
-    if (isPulled) {
+  // Toggle map visibility
+  const toggleMap = useCallback(() => {
+    if (isMapVisible) {
       Animated.spring(pullDownAnim, {
         toValue: 0,
         useNativeDriver: false,
-      }).start(() => setIsPulled(false));
+        tension: 50,
+        friction: 7
+      }).start(() => setIsMapVisible(false));
+    } else {
+      Animated.spring(pullDownAnim, {
+        toValue: MAP_HEIGHT,
+        useNativeDriver: false,
+      }).start(() => setIsMapVisible(true));
     }
-  };
+  }, [isMapVisible, pullDownAnim]);
 
   const headerOpacity = pullDownAnim.interpolate({
-    inputRange: [0, PULL_THRESHOLD],
+    inputRange: [0, 100],
     outputRange: [0, 1],
     extrapolate: 'clamp',
   });
@@ -385,7 +365,7 @@ const HomeScreen = () => {
     <SafeAreaView className="flex-1">
       <StatusBar barStyle="dark-content" />
 
-      {/* Pull-down Map View */}
+      {/* Map View */}
       <Animated.View 
         style={{
           position: 'absolute',
@@ -430,10 +410,11 @@ const HomeScreen = () => {
         <View className="absolute bottom-16 left-0 right-0 px-6 py-3 z-10">
           <TouchableOpacity
             className="mb-4 bg-primary rounded-full py-3 px-6 self-center"
-            onPress={handleCollapseHeader}
+            onPress={toggleMap}
           >
             <Text className="text-white text-base font-semibold">Close Map</Text>
           </TouchableOpacity>
+          
           <View className="bg-white rounded-full px-6 pb-2 border-2 border-gray-200">
             <TextInput
               placeholder="Search location, tags, anything ..."
@@ -445,15 +426,8 @@ const HomeScreen = () => {
 
       {/* Main Scrollable Content */}
       <Animated.View style={{ flex: 1, transform: [{ translateY: pullDownAnim }] }}>
-        {/* Main search bar */}
-        <View className="px-6 py-3 bg-gray-50 z-10">
-          <View className="bg-white rounded-full px-6 pb-2 border-2 border-gray-200">
-            <TextInput
-              placeholder="Search location, tags, anything ..."
-              className="text-base py-4"
-            />
-          </View>
-        </View>
+        {/* Main search bar with map toggle button */}
+        <SearchBar onMapToggle={toggleMap} isMapVisible={isMapVisible} />
         
         <Animated.ScrollView
           className="flex-1 px-6"
@@ -463,10 +437,6 @@ const HomeScreen = () => {
             { useNativeDriver: true }
           )}
           scrollEventThrottle={16}
-          {...panResponder.panHandlers}
-          onScrollBeginDrag={() => {
-            if (isPulled) handleCollapseHeader();
-          }}
           refreshControl={
             <RefreshControl
               refreshing={isRefreshing}
