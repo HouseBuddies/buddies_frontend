@@ -1,3 +1,4 @@
+import BottomNavigation from '@/components/BottomNavigation';
 import TopNavigation from '@/components/TopNavigations';
 import { useAuth } from '@/context/AuthContext'; // Import auth context for token
 import { getHouseBills, getHouseTasks } from '@/data/houses'; // Make sure path is correct
@@ -178,7 +179,7 @@ export default function Home() {
             <View className="flex-1">
                 <TopNavigation activeTab={activeTab} onTabChange={route => handleTabChange(route)} />
 
-                <ScrollView className="flex-1 px-4 mt-16">
+                <ScrollView className="flex-1 px-4 mt-4">
                     {/* Property ID Indicator */}
                     <View className="mt-2 mb-4">
                         <Text className="text-sm text-gray-500">Property ID: {id}</Text>
@@ -261,6 +262,7 @@ export default function Home() {
                     </View>
                 </ScrollView>
             </View>
+            <BottomNavigation />
         </SafeAreaView>
     );
 }

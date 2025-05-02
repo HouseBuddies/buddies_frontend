@@ -1,6 +1,7 @@
 // BillSplitterScreen.jsx
+import BottomNavigation from '@/components/BottomNavigation';
 import TopNavigation from '@/components/TopNavigations';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Modal, Platform, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 //  components
@@ -437,9 +438,10 @@ const BillSplitterScreen = () => {
     const [activeTab2, setActiveTab2] = useState('bills')
     const [userSummaries, setUserSummaries] = useState([]);
     const [settlements, setSettlements] = useState([]);
+    const { id } = useLocalSearchParams();
 
     const handleTabChange = (route: string) => {
-        router.push(`/management/1/${route}`);
+        router.push(`/management/${id}/${route}`);
     };
 
     useEffect(() => {
@@ -633,6 +635,7 @@ const BillSplitterScreen = () => {
                 onSave={addNewExpense}
                 users={users}
             />
+            <BottomNavigation />
         </View>
     );
 };

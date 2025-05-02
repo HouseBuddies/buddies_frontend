@@ -22,6 +22,9 @@ const BottomNavigation = () => {
         case "messages":
           router.push("/")
           break
+        case "search":
+          router.push("/home")
+          break
         case "profile":
           router.push("/profile")
           break

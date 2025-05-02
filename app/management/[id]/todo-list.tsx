@@ -1,58 +1,115 @@
+import BottomNavigation from '@/components/BottomNavigation';
 import TopNavigation from '@/components/TopNavigations';
+import { useAuth } from '@/context/AuthContext'; // Import auth context for token
+import { getHouseTasks } from '@/data/houses'; // Import the task fetching function
 import Checkbox from 'expo-checkbox';
-import { useRouter } from "expo-router";
-import { useState } from 'react';
-import { FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from 'react-native';
 
-// Mock data: list of todos with title and assignee
-const initialTodos = [
-  { id: '1', title: 'Finish project report', assignedTo: 'Alice', completed: false },
-  { id: '2', title: 'Update client on status', assignedTo: 'Bob', completed: false },
-  { id: '3', title: 'Design new logo', assignedTo: 'Charlie', completed: false },
-  { id: '4', title: 'Plan team meeting', assignedTo: 'Dana', completed: false },
-];
+// Define Task interface based on the API response structure
+interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  due_date: string;
+  finished: boolean;
+}
 
 export default function TodoList() {
-  const [todos, setTodos] = useState(initialTodos);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('todo-list');
+  
   const router = useRouter();
   const params = useLocalSearchParams();
   const id = params.id;
+  
+  // Get auth token from context
+  const { token } = useAuth();
 
-  const toggleTodo = (id: string) => {
-    setTodos(prev =>
-      prev.map(todo =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
+  // Fetch tasks when component mounts
+  useEffect(() => {
+    if (!id || !token) return;
+    
+    const fetchTasks = async () => {
+      try {
+        setLoading(true);
+        const tasksData = await getHouseTasks(id as string, token);
+        
+        // Handle the new data structure where tasks are within a "data" property
+        if (tasksData && tasksData.data && Array.isArray(tasksData.data)) {
+          setTasks(tasksData.data);
+        }
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchTasks();
+  }, [id, token]);
+
+  // Toggle task completed status
+  const toggleTask = (taskId: string, currentFinished: boolean) => {
+    setTasks(prev =>
+      prev.map(task =>
+        task.id === taskId ? { ...task, finished: !currentFinished } : task
       )
     );
+    
+    // Here you would typically send an API request to update the task status
+    // For example: updateTaskStatus(taskId, !currentFinished, token);
   };
 
   const handleTabChange = (route: string) => {
-    router.push(`/management/1/${route}`);
+    router.push(`/management/${id}/${route}`);
   };
 
   const navigateToAdd = () => {
-    router.push('/management/1/create-todo');
+    router.push(`/management/${id}/create-todo`);
   };
 
-  const renderItem = ({ item }: { item: typeof initialTodos[0] }) => (
+  const renderItem = ({ item }: { item: Task }) => (
     <TouchableOpacity
       className="flex-row items-center justify-between p-4 border-b border-gray-200 bg-white"
       activeOpacity={0.7}
-      onPress={() => toggleTodo(item.id)}
+      onPress={() => toggleTask(item.id, item.finished)}
     >
       <View className="flex-row items-center">
         <Checkbox
-          value={item.completed}
-          onValueChange={() => toggleTodo(item.id)}
-          color={item.completed ? '#4F46E5' : undefined}
+          value={item.finished}
+          onValueChange={() => toggleTask(item.id, item.finished)}
+          color={item.finished ? '#4F46E5' : undefined}
         />
-        <View className="ml-3">
-          <Text className={`${item.completed ? 'line-through text-gray-400' : 'text-black'} text-lg`}>{item.title}</Text>
-          <Text className="text-sm text-gray-500">Assigned to: {item.assignedTo}</Text>
+        <View className="ml-3 flex-1">
+          <Text className={`${item.finished ? 'line-through text-gray-400' : 'text-black'} text-lg`}>
+            {item.title}
+          </Text>
+          {item.description && (
+            <Text className="text-sm text-gray-500">{item.description}</Text>
+          )}
+          {item.due_date && (
+            <Text className="text-xs text-gray-500">
+              Due: {new Date(item.due_date).toLocaleDateString()}
+            </Text>
+          )}
         </View>
       </View>
     </TouchableOpacity>
+  );
+
+  const renderEmptyList = () => (
+    <View className="flex-1 items-center justify-center p-8">
+      <Text className="text-gray-500 text-lg">No tasks found</Text>
+      <TouchableOpacity
+        onPress={navigateToAdd}
+        className="mt-4 bg-indigo-600 rounded-lg py-2 px-4"
+      >
+        <Text className="text-white font-medium">Add Task</Text>
+      </TouchableOpacity>
+    </View>
   );
 
   return (
@@ -70,12 +127,20 @@ export default function TodoList() {
         </TouchableOpacity>
       </View>
 
-      <FlatList
-        data={todos}
-        keyExtractor={item => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={{ paddingVertical: 8 }}
-      />
+      {loading ? (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#4F46E5" />
+        </View>
+      ) : (
+        <FlatList
+          data={tasks}
+          keyExtractor={item => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={{ paddingVertical: 0, flexGrow: 1 }}
+          ListEmptyComponent={renderEmptyList}
+        />
+      )}
+      <BottomNavigation />
     </View>
   );
 }

@@ -2,6 +2,7 @@ import BottomNavigation from '@/components/BottomNavigation';
 import { useAuth } from '@/context/AuthContext';
 import { fetchUserInfo } from '@/data/auth/auth';
 import { getUserHouses } from '@/data/houses';
+import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Image, RefreshControl, SafeAreaView, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native';
@@ -24,8 +25,10 @@ interface User {
   photo?: string;
 }
 
+const API_URL = Constants.expoConfig?.extra?.apiUrl || '';
+
 export default function Management() {
-  const { token, logout } = useAuth();
+  const { token } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [houses, setHouses] = useState<House[]>([]);
   const [loadingUser, setLoadingUser] = useState<boolean>(false);
@@ -73,6 +76,7 @@ export default function Management() {
     loadData();
   };
 
+  
   const ListingItem = ({ house }: { house: House }) => (
     <TouchableOpacity
       className="mb-4 w-full"
@@ -81,7 +85,7 @@ export default function Management() {
     >
       <View className="rounded-xl overflow-hidden border border-gray-200 bg-white">
         <Image
-          source={{ uri: house.image.startsWith('http') ? house.image : `https://your-api.com${house.image}` }}
+          source={{ uri: house.image.startsWith('http') ? house.image : `${API_URL.replace("/api", "")}${house.image}` }}
           className="h-32 w-full"
           resizeMode="cover"
         />
