@@ -1,32 +1,20 @@
 import { useAuth } from "@/context/AuthContext";
 import { sign_in } from "@/data";
-<<<<<<< Updated upstream
 import { Link, router } from "expo-router";
-import { useState } from "react";
-=======
-import { Link } from "expo-router";
 import { useEffect, useState } from "react";
->>>>>>> Stashed changes
 import {
-  Alert,
-  Image,
-  Keyboard,
-<<<<<<< Updated upstream
-=======
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  ScrollView,
->>>>>>> Stashed changes
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-<<<<<<< Updated upstream
-  View
-=======
-  View,
->>>>>>> Stashed changes
+    Alert,
+    Image,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View
 } from "react-native";
 
 
@@ -74,12 +62,8 @@ const LoginPage = () => {
         return;
       }
       const data = await response.data;
-<<<<<<< Updated upstream
       await setToken(data.user.token);
       router.push("/home");
-=======
-      Alert.alert("Success", "Logged in successfully!");
->>>>>>> Stashed changes
     } catch (error) {
       Alert.alert("Login Failed", "Something went wrong.");
       console.error(error);
