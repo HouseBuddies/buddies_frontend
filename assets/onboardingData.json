@@ -1,0 +1,44 @@
+[
+    {
+      "title": "Personalise your experience",
+      "subtitle": "Choose your interests.",
+      "options": [
+        "User Interface",
+        "User Experience",
+        "User Research",
+        "UX Writing",
+        "User Testing",
+        "Service Design",
+        "Strategy",
+        "Design Systems"
+      ],
+      "stateKey": "selectedInterests"
+    },
+    {
+      "title": "Set your goals",
+      "subtitle": "What do you want to achieve?",
+      "options": [
+        "Improve Design Skills",
+        "Learn New Tools",
+        "Network with Designers",
+        "Find Design Inspiration",
+        "Start a Design Project",
+        "Get Design Feedback"
+      ],
+      "stateKey": "selectedGoals"
+    },
+    {
+      "title": "Notification preferences",
+      "subtitle": "Choose what you'd like to hear about.",
+      "options": [
+        "Daily Tips & Tricks",
+        "Weekly Digest",
+        "New Features",
+        "Community Updates",
+        "Event Reminders",
+        "Design Challenges",
+      ],
+      "stateKey": "selectedNotifications"
+    }
+  ]
+  
