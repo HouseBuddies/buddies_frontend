@@ -17,3 +17,13 @@ export async function sign_up(name: string, email: string, password: string) {
   });
   return response.data;
 }
+
+export async function fetchUserInfo(token: string) {
+  const response = await API.get(`/user`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  console.log("User data:", response.data);
+  return response.data;
+}
