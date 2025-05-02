@@ -326,7 +326,7 @@ const HouseDetails = () => {
           )}
           <View className="absolute w-full flex-row justify-between p-4">
             <TouchableOpacity>
-              <Link href="/home" className="text-3xl text-gray-700">
+              <Link href="/home" className="text-3xl text-white">
                 ✕
               </Link>
             </TouchableOpacity>
@@ -338,7 +338,7 @@ const HouseDetails = () => {
             >
               <Text
                 className={`text-3xl ${
-                  favourite ? "text-red-500" : "text-gray-700"
+                  favourite ? "text-primary" : "text-white"
                 }`}
               >
                 {favourite ? "★" : "☆"}
