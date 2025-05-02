@@ -38,6 +38,7 @@
     "react-native": "0.79.1",
     "react-native-dotenv": "^3.4.11",
     "react-native-gesture-handler": "~2.24.0",
+    "react-native-maps": "1.20.1",
     "react-native-paper": "^5.14.0",
     "react-native-reanimated": "^3.16.2",
     "react-native-safe-area-context": "5.3.0",
