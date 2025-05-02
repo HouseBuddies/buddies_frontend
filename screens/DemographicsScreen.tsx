@@ -47,7 +47,7 @@ export default function DemographicsScreen({ navigation, route }) {
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingRight: 16 }}
-              className="mb-4"> {["Female", "Male", "Non Binary ", "Prefer not to say"].map((item) => (
+              className="mb-4">{["Female", "Male", "Non Binary", "Prefer not to say"].map((item) => (
               <TouchableOpacity
                 key={item}
                 className={`mr-3 mb-2 px-4 py-2 rounded-full ${gender === item ? "bg-primary" : "bg-gray-200"}`}

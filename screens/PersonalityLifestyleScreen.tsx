@@ -127,8 +127,7 @@ export default function PersonalityLifestyleScreen({ navigation, route }: { navi
           <ScrollView horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingRight: 16 }}
-              className="mb-4">
-            {[
+              className="mb-4">{[
               { emoji: "🌅", label: "Early Bird", value: "early-bird" },
               { emoji: "🦉", label: "Night Owl", value: "night-owl" },
               { emoji: "📊", label: "Regular", value: "regular" },
@@ -153,7 +152,7 @@ export default function PersonalityLifestyleScreen({ navigation, route }: { navi
           <ScrollView horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingRight: 16 }}
-              className="mb-4">            {[
+              className="mb-4">{[
               { emoji: "🐶", label: "Dog", value: "dog" },
               { emoji: "🐱", label: "Cat", value: "cat" },
               { emoji: "🐦", label: "Bird", value: "bird" },
@@ -180,7 +179,7 @@ export default function PersonalityLifestyleScreen({ navigation, route }: { navi
           <ScrollView horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingRight: 16 }}
-              className="mb-4">              {[
+              className="mb-4">{[
               { emoji: "🚬", label: "Smoker", value: "smoker" },
               { emoji: "🚭", label: "Non-smoker", value: "non-smoker" }
             ].map((item) => (
@@ -200,7 +199,7 @@ export default function PersonalityLifestyleScreen({ navigation, route }: { navi
           <ScrollView horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingRight: 16 }}
-              className="mb-4">                   {[
+              className="mb-4">{[
               { emoji: "🍷", label: "Regular", value: "regular" },
               { emoji: "🥂", label: "Occasional", value: "occasional" },
               { emoji: "🚱", label: "Never", value: "never" },
@@ -224,7 +223,7 @@ export default function PersonalityLifestyleScreen({ navigation, route }: { navi
           <ScrollView horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingRight: 16 }}
-              className="mb-4">             {[
+              className="mb-4">{[
               { emoji: "👥", label: "Often", value: "often" },
               { emoji: "👤", label: "Sometimes", value: "sometimes" },
               { emoji: "🧍", label: "Rarely", value: "rarely" },
@@ -250,7 +249,7 @@ export default function PersonalityLifestyleScreen({ navigation, route }: { navi
 
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingRight: 16 }}
-              className="mb-4">               {[
+              className="mb-4">{[
               { emoji: "🥗", label: "Vegetarian", value: "vegetarian" },
               { emoji: "🌱", label: "Vegan", value: "vegan" },
               { emoji: "🍖", label: "Carnivore", value: "carnivore" },
