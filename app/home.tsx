@@ -1,14 +1,18 @@
 import BottomNavigation from '@/components/BottomNavigation';
 import { useAuth } from '@/context/AuthContext';
-import { listHouses } from '@/data/houses/houses';
+import { fetchUserInfo } from '@/data/auth/auth';
+import { addFavoriteHouse, getUserFavoriteHouses, listHouses, removeFavoriteHouse } from '@/data/houses/houses';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   Animated,
   Dimensions,
   Image,
   PanResponder,
+  RefreshControl,
   SafeAreaView,
   StatusBar,
   Text,
@@ -21,39 +25,96 @@ import MapView, { Marker } from 'react-native-maps';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const PULL_THRESHOLD = 100;
 const MAP_HEIGHT = SCREEN_HEIGHT;
+const DEFAULT_LAT = 41.5454;
+const DEFAULT_LNG = -8.4265;
 
-type PropertyCardProps = {
+// Define proper TypeScript interfaces
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  location?: string;
+  age?: number;
+}
+
+interface House {
+  id: string;
+  address: string;
+  min_rent: number;
+  max_rent: number;
+  owner: {
+    id: string;
+    name: string;
+  };
+  image: string;
+  randomHouseId?: number;
+  randomUserId?: number;
+  latitude?: number;
+  longitude?: number;
+}
+
+interface PropertyCardProps {
   id: string;
   location: string;
   ownerName: string;
   minRent: number;
   maxRent: number;
-  randomHouseId: number;
   randomUserId: number;
   image: string;
   ownerPhoto: string;
+  isFavorite: boolean;
+  onToggleFavorite: (id: string) => void;
   latitude?: number;
   longitude?: number;
-};
+}
 
-const API_URL = Constants.expoConfig?.extra?.apiUrl;
-const GOOGLE_API_KEY = Constants.expoConfig?.extra?.googleApiKey;
+const API_URL = Constants.expoConfig?.extra?.apiUrl || '';
 
-const PropertyCard = ({ id, location, ownerName, ownerPhoto, minRent, maxRent, randomUserId, image }: PropertyCardProps) => {
-  const houseImage = API_URL.replace("/api", "") + image;
+const PropertyCard = ({ 
+  id, 
+  location, 
+  ownerName, 
+  minRent, 
+  maxRent, 
+  randomUserId, 
+  image, 
+  ownerPhoto,
+  isFavorite, 
+  onToggleFavorite 
+}: PropertyCardProps) => {
+  const houseImage = `${API_URL.replace("/api", "")}${image}`;
+  
+  const handlePress = useCallback(() => {
+    router.push(`/house/${id}`);
+  }, [id]);
 
+  const handleFavoritePress = useCallback((e: any) => {
+    e.stopPropagation();
+    onToggleFavorite(id);
+  }, [id, onToggleFavorite]);
+  
   return (
-    <TouchableOpacity
+    <TouchableOpacity 
+      className="bg-white rounded-3xl shadow-2xl mb-8 overflow-hidden" 
+      onPress={handlePress}
       activeOpacity={0.9}
-      onPress={() => router.push(`/house/${id}`)}
-      className="bg-white rounded-3xl shadow-2xl mb-8 overflow-hidden"
     >
       {/* Property Image */}
       <View className="relative">
         <View className="h-64 bg-gray-300">
-          <Image source={{ uri: houseImage }} className="w-full h-full" />
-          <TouchableOpacity className="absolute top-4 right-4">
-            <Text className="text-4xl p-2 text-primary">★</Text>
+          <Image
+            source={{ uri: houseImage }}
+            className="w-full h-full"
+            resizeMode="cover"
+          />
+          <TouchableOpacity 
+            className="absolute top-4 right-4"
+            onPress={handleFavoritePress}
+            accessibilityLabel={isFavorite ? "Remove from favorites" : "Add to favorites"}
+          >
+            <Text className={`text-4xl p-2 ${isFavorite ? 'text-red-500' : 'text-gray-700'}`}>
+              {isFavorite ? '★' : '☆'}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -74,39 +135,163 @@ const PropertyCard = ({ id, location, ownerName, ownerPhoto, minRent, maxRent, r
   );
 };
 
-const DEFAULT_LAT = 41.5454;
-const DEFAULT_LNG = -8.4265;
-
 const HomeScreen = () => {
   const { token } = useAuth();
-  const [houses, setHouses] = useState([] as any[]);
-  const [refreshing, setRefreshing] = useState(false);
+  const [houses, setHouses] = useState<House[]>([]);
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [isPulled, setIsPulled] = useState(false);
 
   const scrollY = useRef(new Animated.Value(0)).current;
   const pullDownAnim = useRef(new Animated.Value(0)).current;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const response = await listHouses(token ?? "");
-      const sliced = response.data.slice(1, 40);
-      const withRandoms = sliced.map((house: any) => ({
-        ...house,
-        randomHouseId: Math.floor(Math.random() * 59),
-        randomUserId: Math.floor(Math.random() * 99),
-        latitude: DEFAULT_LAT + (Math.random() - 0.5) * 0.02,
-        longitude: DEFAULT_LNG + (Math.random() - 0.5) * 0.02,
-      }));
-      setHouses(withRandoms);
-      setRefreshing(false);
-    };
-    fetchData();
-  }, [refreshing]);
-
-  function formatAddress(address: string) {
+  const formatAddress = useCallback((address: string) => {
+    if (!address) return '';
     const parts = address.split(' ');
     return parts.slice(-2).join(' ');
-  }
+  }, []);
+
+  const fetchHouses = useCallback(async () => {
+    if (!token) {
+      setError('Authentication required');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await listHouses(token);
+      if (response?.data) {
+        const sliced = response.data.slice(1, 40);
+        
+        // Assign stable random IDs for image and user and map coordinates
+        const withRandoms = sliced.map((house: House) => ({
+          ...house,
+          randomHouseId: Math.floor(Math.random() * 59),
+          randomUserId: Math.floor(Math.random() * 99),
+          latitude: DEFAULT_LAT + (Math.random() - 0.5) * 0.02,
+          longitude: DEFAULT_LNG + (Math.random() - 0.5) * 0.02,
+        }));
+
+        setHouses(withRandoms);
+      }
+    } catch (err) {
+      console.error('Error fetching houses:', err);
+      setError('Failed to load houses');
+    }
+  }, [token]);
+
+  const fetchUserData = useCallback(async () => {
+    if (!token) return;
+    
+    try {
+      const response = await fetchUserInfo(token);
+      if (response?.user) {
+        setUser(response.user);
+      }
+    } catch (err) {
+      console.error('Error fetching user data:', err);
+    }
+  }, [token]);
+
+  const fetchFavorites = useCallback(async () => {
+    if (!token || !user?.id) return;
+    
+    try {
+      const response = await getUserFavoriteHouses(user.id, token);
+      if (response?.data) {
+        const favoriteIds = new Set(
+          response.data.map((favorite: { house: { id: string } }) => favorite.house.id)
+        );
+        setFavorites(favoriteIds as Set<string>);
+      }
+    } catch (err) {
+      console.error('Error fetching favorites:', err);
+    }
+  }, [token, user]);
+
+  const loadData = useCallback(async (refresh = false) => {
+    try {
+      if (refresh) {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
+
+      await fetchUserData();
+      await fetchHouses();
+      
+      if (refresh) {
+        setIsRefreshing(false);
+      } else {
+        setIsLoading(false);
+      }
+    } catch (err) {
+      console.error('Error loading data:', err);
+      setError('Failed to load data');
+      if (refresh) {
+        setIsRefreshing(false);
+      } else {
+        setIsLoading(false);
+      }
+    }
+  }, [fetchUserData, fetchHouses]);
+
+  // Initial data loading
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // Fetch favorites when user is loaded
+  useEffect(() => {
+    if (user) {
+      fetchFavorites();
+    }
+  }, [user, fetchFavorites]);
+
+  const handleRefresh = useCallback(() => {
+    loadData(true);
+  }, [loadData]);
+
+  const toggleFavorite = useCallback(async (houseId: string) => {
+    if (!token || !user?.id) {
+      Alert.alert('Error', 'You need to be logged in to favorite houses');
+      return;
+    }
+  
+    const isFavorite = favorites.has(houseId);
+    const previousFavorites = new Set(favorites);
+  
+    // Optimistically update UI
+    const newFavorites = new Set(favorites);
+    if (isFavorite) {
+      newFavorites.delete(houseId);
+    } else {
+      newFavorites.add(houseId);
+    }
+    setFavorites(newFavorites);
+  
+    try {
+      const response = isFavorite
+        ? await removeFavoriteHouse(houseId, user.id, token)
+        : await addFavoriteHouse(houseId, user.id, token);
+  
+      const success = isFavorite ? response.data?.value : response.data?.id;
+      
+
+      if (!success) {
+        setFavorites(previousFavorites);
+        Alert.alert('Error', 'Failed to update favorites');
+      }
+    } catch (err) {
+      setFavorites(previousFavorites);
+      Alert.alert('Error', 'An error occurred while updating favorites');
+    }
+  }, [token, user, favorites]);
+  
+  
 
   const panResponder = useRef(
     PanResponder.create({
@@ -168,13 +353,33 @@ const HomeScreen = () => {
     }
   };
 
-  const onRefresh = () => setRefreshing(true);
-
   const headerOpacity = pullDownAnim.interpolate({
     inputRange: [0, PULL_THRESHOLD],
     outputRange: [0, 1],
     extrapolate: 'clamp',
   });
+
+  if (isLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-gray-50 justify-center items-center">
+        <ActivityIndicator size="large" color="#0000ff" />
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView className="flex-1 bg-gray-50 justify-center items-center p-4">
+        <Text className="text-red-500 text-lg mb-4">{error}</Text>
+        <TouchableOpacity 
+          className="bg-blue-500 px-4 py-2 rounded-lg"
+          onPress={() => loadData()}
+        >
+          <Text className="text-white">Retry</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
@@ -215,8 +420,8 @@ const HomeScreen = () => {
                 latitude: house.latitude ?? DEFAULT_LAT,
                 longitude: house.longitude ?? DEFAULT_LNG,
               }}
-              title={house.location}
-              description={`Owned by ${house.ownerName}`}
+              title={formatAddress(house.address)}
+              description={`Owned by ${house.owner.name}`}
             />
           ))}
         </MapView>
@@ -262,21 +467,34 @@ const HomeScreen = () => {
           onScrollBeginDrag={() => {
             if (isPulled) handleCollapseHeader();
           }}
-        >
-          {houses.map((house, index) => (
-            <PropertyCard
-              key={index}
-              id={house.id}
-              location={formatAddress(house.address)}
-              rent={house.rent}
-              ownerName={house.owner.name}
-              randomHouseId={house.randomHouseId}
-              randomUserId={house.randomUserId}
-              image={house.image}
-              latitude={house.latitude}
-              longitude={house.longitude}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
             />
-          ))}
+          }
+        >
+          {houses.map((house, index) => {
+            const ownerPhoto = `https://randomuser.me/api/portraits/men/${house.randomUserId || 1}.jpg`;
+            
+            return (
+              <PropertyCard
+                key={house.id || index}
+                id={house.id}
+                location={formatAddress(house.address)}
+                minRent={house.min_rent}
+                maxRent={house.max_rent}
+                ownerName={house.owner.name}
+                randomUserId={house.randomUserId || 1}
+                image={house.image}
+                ownerPhoto={ownerPhoto}
+                isFavorite={favorites.has(house.id)}
+                onToggleFavorite={toggleFavorite}
+                latitude={house.latitude}
+                longitude={house.longitude}
+              />
+            );
+          })}
         </Animated.ScrollView>
       </Animated.View>
 
