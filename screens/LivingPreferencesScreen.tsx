@@ -2,14 +2,12 @@
 
 import DateTimePicker from "@react-native-community/datetimepicker"
 import Slider from "@react-native-community/slider"
-import { Picker } from "@react-native-picker/picker"
 import { useState } from "react"
 import { Platform, SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native"
 
 export default function LivingPreferencesScreen({ navigation, route }) {
   const [neighborhood, setNeighborhood] = useState("")
   const [maxRent, setMaxRent] = useState(1500)
-  const [leaseLength, setLeaseLength] = useState("")
   const [moveInDate, setMoveInDate] = useState(new Date())
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [workSchedule, setWorkSchedule] = useState("")
@@ -19,7 +17,6 @@ export default function LivingPreferencesScreen({ navigation, route }) {
     const livingPreferences = {
       neighborhood,
       maxRent,
-      leaseLength,
       moveInDate,
       workSchedule,
     }
@@ -38,15 +35,17 @@ export default function LivingPreferencesScreen({ navigation, route }) {
     })
   }
 
+  const isFormComplete = !!neighborhood && !!workSchedule;
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView className="flex-1 px-6 pt-4">
 
-        <Text className="text-2xl font-bold text-gray-800 mt-6 mb-8">Your Living Preferences</Text>
+        <Text className="text-2xl font-bold text-gray-800 mt-6 mb-8">Now, your living preferences.</Text>
 
         {/* Preferred Neighborhood */}
         <View className="mb-8">
-          <Text className="text-lg font-semibold text-gray-800 mb-2">Preferred Neighborhood or City</Text>
+          <Text className="text-lg font-semibold text-gray-800 mb-2">City</Text>
           <TextInput
             className="border border-gray-300 rounded-lg px-4 py-3"
             placeholder="Enter neighborhood or city"
@@ -57,46 +56,27 @@ export default function LivingPreferencesScreen({ navigation, route }) {
 
         {/* Max Monthly Rent */}
         <View className="mb-8">
-          <Text className="text-lg font-semibold text-gray-800 mb-2">Max Monthly Rent: ${maxRent}</Text>
+          <Text className="text-lg font-semibold text-gray-800 mb-2">Rent ({maxRent}€)</Text>
           <View className="flex-row items-center">
-            <Text className="text-gray-500 mr-2">$500</Text>
+            <Text className="text-gray-500 mr-2">500 €</Text>
             <Slider
               style={{ flex: 1, height: 40 }}
               minimumValue={500}
-              maximumValue={5000}
+              maximumValue={3000}
               step={50}
               value={maxRent}
               onValueChange={setMaxRent}
-              minimumTrackTintColor="#3b82f6"
-              maximumTrackTintColor="#e2e8f0"
-              thumbTintColor="#3b82f6"
+              minimumTrackTintColor="#274454"
+              maximumTrackTintColor="#274454"
+              thumbTintColor="#274454"
+              
             />
-            <Text className="text-gray-500 ml-2">$5000+</Text>
+            <Text className="text-gray-500 ml-2">3000€ +</Text>
           </View>
           <View className="flex-row justify-between mt-1">
-            <Text className="text-xs text-gray-500">Budget</Text>
-            <Text className="text-xs text-gray-500">Mid-range</Text>
-            <Text className="text-xs text-gray-500">Luxury</Text>
-          </View>
-        </View>
-
-        {/* Preferred Lease Length */}
-        <View className="mb-8">
-          <Text className="text-lg font-semibold text-gray-800 mb-2">Preferred Lease Length</Text>
-          <View className="border border-gray-300 rounded-lg overflow-hidden">
-            <Picker
-              selectedValue={leaseLength}
-              onValueChange={(itemValue) => setLeaseLength(itemValue)}
-              style={{ height: 50 }}
-            >
-              <Picker.Item label="Select lease length" value="" />
-              <Picker.Item label="Month-to-month" value="month-to-month" />
-              <Picker.Item label="3 months" value="3-months" />
-              <Picker.Item label="6 months" value="6-months" />
-              <Picker.Item label="1 year" value="1-year" />
-              <Picker.Item label="1+ year" value="more-than-1-year" />
-              <Picker.Item label="Flexible" value="flexible" />
-            </Picker>
+            <Text className="text-xs text-gray-500">👛</Text>
+            <Text className="text-xs text-gray-500">💳</Text>
+            <Text className="text-xs text-gray-500">💸</Text>
           </View>
         </View>
         <View className="mb-8">
@@ -138,9 +118,9 @@ export default function LivingPreferencesScreen({ navigation, route }) {
             >    
             {[
               { label: "🏠 Remote", value: "remote" },
-              { label: "🏢 On-site", value: "on-site" },
-              { label: "🌞 Day shift", value: "day-shift" },
-              { label: "🌙 Night shift", value: "night-shift" },
+              { label: "🏢 On-site", value: "on_site" },
+              { label: "🌞 Day shift", value: "day_shift" },
+              { label: "🌙 Night shift", value: "night_shift" },
               { label: "📅 Weekends", value: "weekends" },
               { label: "🔄 Rotating", value: "rotating" },
             ].map((item) => (
@@ -157,7 +137,11 @@ export default function LivingPreferencesScreen({ navigation, route }) {
       </ScrollView>
 
       <View className="px-6 py-4 border-t border-gray-200">
-        <TouchableOpacity className="bg-blue-600 py-4 rounded-lg items-center" onPress={handleNext}>
+        <TouchableOpacity
+          className={`rounded-2xl p-5 items-center ${isFormComplete ? "bg-primary" : "bg-gray-300"}`}
+          onPress={handleNext}
+          disabled={!isFormComplete}
+        >
           <Text className="text-white font-bold text-lg">Continue</Text>
         </TouchableOpacity>
       </View>

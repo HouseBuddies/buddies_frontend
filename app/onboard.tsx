@@ -37,20 +37,20 @@ export default function App() {
 function WelcomeScreen({ navigation }: { navigation: any }) {
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-1 justify-center items-center px-6">
-        <Text className="text-4xl font-bold text-center text-blue-600 mb-2">🏠 Roommate Matcher</Text>
-        <Text className="text-xl text-center text-gray-700 mb-8">Find your perfect roommate match!</Text>
+      <View className="flex-1 gap-6 justify-center items-center px-6">
+        <Text className="text-4xl font-bold text-center text-primary">Buddy</Text>
+        <Text className="text-xl text-center text-gray-700">Find your perfect roommates match!</Text>
 
-        <View className="w-full space-y-4 mb-8">
-          <View className="flex-row items-center">
+        <View className="w-full space-y-4">
+          <View className="flex-row items-center mb-4">
             <Text className="text-3xl mr-4">📋</Text>
             <View>
-              <Text className="text-lg font-semibold text-gray-800">Basic Demographics</Text>
+              <Text className="text-lg font-semibold text-primary">Basic Demographics</Text>
               <Text className="text-gray-600">Age, gender, occupation, income</Text>
             </View>
           </View>
 
-          <View className="flex-row items-center">
+          <View className="flex-row items-center mb-4">
             <Text className="text-3xl mr-4">🏙️</Text>
             <View>
               <Text className="text-lg font-semibold text-gray-800">Living Preferences</Text>
@@ -58,7 +58,7 @@ function WelcomeScreen({ navigation }: { navigation: any }) {
             </View>
           </View>
 
-          <View className="flex-row items-center">
+          <View className="flex-row items-center mb-4">
             <Text className="text-3xl mr-4">🧠</Text>
             <View>
               <Text className="text-lg font-semibold text-gray-800">Personality & Lifestyle</Text>
@@ -68,7 +68,7 @@ function WelcomeScreen({ navigation }: { navigation: any }) {
         </View>
 
         <TouchableOpacity
-          className="bg-blue-600 py-4 px-8 rounded-full w-full items-center"
+          className="bg-primary py-4 px-8 rounded-full w-full items-center"
           onPress={() => navigation.navigate("Demographics")}
         >
           <Text className="text-white font-bold text-lg">Get Started</Text>
