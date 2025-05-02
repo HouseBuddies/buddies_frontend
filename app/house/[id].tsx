@@ -18,14 +18,9 @@ const API_URL = Constants.expoConfig?.extra?.apiUrl;
 const { width } = Dimensions.get('window');
 
 const App = () => {
-  const { token } = useAuth();
-  const { id } = useLocalSearchParams();
-  const [house, setHouse] = useState<{
-    image: string;
-    rent: number;
-    address: string;
-    owner: any;
-  } | null>(null);
+    const { token } = useAuth();
+    const { id } = useLocalSearchParams();
+    const [house, setHouse] = useState<{ image: string,  min_rent: number, max_rent: number, address : string, owner : any, tags : string[]} | null>(null);
 
   const apiKey = Constants.expoConfig?.extra?.googleApiKey;
   
@@ -90,7 +85,7 @@ const App = () => {
             <Image source={{ uri: houseImage }} className="w-full h-full" />
           )}
           <View className="absolute w-full flex-row justify-between p-4">
-            <TouchableOpacity onPress={() => router.back()}>
+            <TouchableOpacity onPress={() => router.back()} >
               <Text className="text-3xl text-gray-700">X</Text>
             </TouchableOpacity>
             <TouchableOpacity>
@@ -102,34 +97,25 @@ const App = () => {
         {/* Property Details */}
         <View className="p-4">
           <View className="flex-row justify-between items-center">
-            <Text className="text-xl font-semibold">
-              {formatAddress(house?.address || '')}
-            </Text>
-            <Text className="text-lg">{house?.rent} €</Text>
+            <Text className="text-xl font-semibold">{formatAddress(house?.address || "")}</Text>
+            <Text className="text-lg">{house?.min_rent} € - {house?.max_rent} €</Text>
           </View>
 
           {/* Profile Section */}
-          {house?.owner && (
-            <View className="flex-row items-center mt-4">
-              <Image
-                source={{
-                  uri: 'https://randomuser.me/api/portraits/men/32.jpg'
-                }}
-                className="w-12 h-12 rounded-full"
-              />
-              <Text className="ml-3 text-lg">{house.owner.name}</Text>
-            </View>
-          )}
-
+          <View className="flex-row items-center mt-4">
+            <Image 
+              source={{ uri: house?.owner.photo }} 
+              className="w-12 h-12 rounded-full"
+            />
+            <Text className="ml-3 text-lg">{house?.owner.name}</Text>
+          </View>
+          
           {/* Interests Section */}
           <View className="mt-6">
             <Text className="text-xl mb-3">Interesses</Text>
             <View className="flex-row space-x-2">
-              {['Rock', 'Indie', 'Metal'].map((interest, index) => (
-                <View
-                  key={index}
-                  className="py-2 px-4 border border-gray-300 rounded-full"
-                >
+              {house?.tags.map((interest, index) => (
+                <View key={index} className="py-2 px-4 border border-gray-300 rounded-full">
                   <Text>{interest}</Text>
                 </View>
               ))}
