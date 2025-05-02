@@ -19,6 +19,7 @@ interface Task {
 
 interface Bill {
   id: string;
+  description: string;
   title: string;
   amount: number;
   due_date: string;
@@ -52,12 +53,12 @@ const ToDoItem = ({ task, onToggle }: { task: Task; onToggle: (id: string, value
 const PaymentItem = ({ bill, onPress }: { bill: Bill; onPress: () => void }) => (
     <TouchableOpacity className="flex-row items-center justify-between py-3" onPress={onPress}>
         <View className="flex-1">
-            <Text className={`${bill.paid ? 'text-gray-400' : 'text-gray-800'}`}>{bill.title}</Text>
+            <Text className={`${bill.paid ? 'text-gray-400' : 'text-gray-800'}`}>{bill.description}</Text>
             <Text className="text-sm text-gray-500">Due: {new Date(bill.due_date).toLocaleDateString()}</Text>
         </View>
         <View className="flex-row items-center">
             <Text className={`mr-2 font-medium ${bill.paid ? 'text-gray-400' : 'text-indigo-600'}`}>
-                €{bill.amount.toFixed(2)}
+                €{bill.price}
             </Text>
             <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
                 <Path d="M10 6l6 6-6 6" stroke={'#6B7280'} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
@@ -109,12 +110,12 @@ export default function Home() {
 
                 setLoadingBills(true);
                 billsData = (await getHouseBills(id as string, token));
-                if (billsData && billsData.data && Array.isArray(billsData)) {
+                if (billsData && billsData.data && Array.isArray(billsData.data)) {
                     setBills(billsData.data.slice(0, 5)); // Limit to 5 bills
                     
                     // Create calendar events from bills
                     const calendarEvents: Record<string, { marked: boolean, dotColor: string }> = {};
-                    billsData.forEach(bill => {
+                    billsData.data.forEach((bill: { due_date: string | number | Date; paid: any; }) => {
                         const dateKey = new Date(bill.due_date).toISOString().split('T')[0];
                         calendarEvents[dateKey] = {
                             marked: true,
