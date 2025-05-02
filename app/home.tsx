@@ -11,6 +11,9 @@ import {
   Animated,
   Dimensions,
   Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   RefreshControl,
   SafeAreaView,
   StatusBar,
@@ -19,7 +22,8 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import MapView, { Callout, Marker } from 'react-native-maps';
+import Svg, { Circle, Path } from 'react-native-svg';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const MAP_HEIGHT = SCREEN_HEIGHT;
@@ -77,18 +81,27 @@ const API_URL = Constants.expoConfig?.extra?.apiUrl || '';
 const SearchBar = ({ onMapToggle, isMapVisible }: SearchBarProps) => {
   return (
     <View className="px-6 py-3 bg-gray-50 z-10">
-      <View className="flex-row items-center bg-white rounded-full border-2 border-gray-200 overflow-hidden">
+      <View className="flex-row items-center bg-white rounded-2xl border-2 border-gray-200 overflow-hidden">
         <TextInput
           placeholder="Search location, tags, anything ..."
           className="flex-1 text-base py-4 px-6"
         />
         <TouchableOpacity 
-          className="bg-blue-500 p-3 rounded-full mr-1"
+          className="bg-primary p-3 rounded-full mr-2"
           onPress={onMapToggle}
           accessibilityLabel={isMapVisible ? "Hide map" : "Show map"}
         >
           <View className="w-6 h-6 items-center justify-center">
-            <Text className="text-white text-xl">🌐</Text>
+            <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
+              <Circle cx={12} cy={12} r={10} stroke="#ffffff" strokeWidth={2} />
+              <Path
+                d="M2 12h20M12 2c2.5 2.5 4 6 4 10s-1.5 7.5-4 10c-2.5-2.5-4-6-4-10s1.5-7.5 4-10z"
+                stroke="#ffffff"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </Svg>
           </View>
         </TouchableOpacity>
       </View>
@@ -121,7 +134,7 @@ const PropertyCard = ({
   
   return (
     <TouchableOpacity 
-      className="bg-white rounded-3xl shadow-2xl mb-8 overflow-hidden" 
+      className="bg-white rounded-2xl shadow-5xl mb-8 overflow-hidden" 
       onPress={handlePress}
       activeOpacity={0.9}
     >
@@ -138,7 +151,7 @@ const PropertyCard = ({
             onPress={handleFavoritePress}
             accessibilityLabel={isFavorite ? "Remove from favorites" : "Add to favorites"}
           >
-            <Text className={`text-4xl p-2 ${isFavorite ? 'text-red-500' : 'text-gray-700'}`}>
+            <Text className={`text-4xl p-2 ${isFavorite ? 'text-primary' : 'text-white'}`}>
               {isFavorite ? '★' : '☆'}
             </Text>
           </TouchableOpacity>
@@ -170,9 +183,48 @@ const HomeScreen = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isMapVisible, setIsMapVisible] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   const scrollY = useRef(new Animated.Value(0)).current;
   const pullDownAnim = useRef(new Animated.Value(0)).current;
+  const keyboardAnim = useRef(new Animated.Value(0)).current;
+
+  // Add keyboard event listeners
+  useEffect(() => {
+    const keyboardWillShowSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      (event) => {
+        setKeyboardVisible(true);
+        const keyboardHeight = event.endCoordinates.height;
+        setKeyboardHeight(keyboardHeight);
+        
+        Animated.timing(keyboardAnim, {
+          toValue: keyboardHeight,
+          duration: Platform.OS === 'ios' ? 250 : 0,
+          useNativeDriver: false,
+        }).start();
+      }
+    );
+    
+    const keyboardWillHideSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => {
+        setKeyboardVisible(false);
+        
+        Animated.timing(keyboardAnim, {
+          toValue: 0,
+          duration: Platform.OS === 'ios' ? 250 : 0,
+          useNativeDriver: false,
+        }).start();
+      }
+    );
+
+    return () => {
+      keyboardWillShowSub.remove();
+      keyboardWillHideSub.remove();
+    };
+  }, []);
 
   const formatAddress = useCallback((address: string) => {
     if (!address) return '';
@@ -316,8 +368,16 @@ const HomeScreen = () => {
     }
   }, [token, user, favorites]);
 
+  // Navigate to house detail page
+  const navigateToHouse = useCallback((houseId: string) => {
+    router.push(`/house/${houseId}`);
+  }, []);
+
   // Toggle map visibility
   const toggleMap = useCallback(() => {
+    // Dismiss keyboard when toggling map
+    Keyboard.dismiss();
+    
     if (isMapVisible) {
       Animated.spring(pullDownAnim, {
         toValue: 0,
@@ -338,6 +398,11 @@ const HomeScreen = () => {
     outputRange: [0, 1],
     extrapolate: 'clamp',
   });
+
+  // Dismiss keyboard when tapping outside the text input in the map view
+  const dismissKeyboard = useCallback(() => {
+    Keyboard.dismiss();
+  }, []);
 
   if (isLoading) {
     return (
@@ -362,117 +427,186 @@ const HomeScreen = () => {
   }
 
   return (
-    <SafeAreaView className="flex-1">
-      <StatusBar barStyle="dark-content" />
+    <KeyboardAvoidingView 
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+    >
+      <SafeAreaView className="flex-1">
+        <StatusBar barStyle="dark-content" />
 
-      {/* Map View */}
-      <Animated.View 
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: pullDownAnim,
-          opacity: headerOpacity,
-          zIndex: 1,
-          overflow: 'hidden'
-        }}
-        className="bg-gray-50"
-      >
-        <MapView
-          style={{ width: SCREEN_WIDTH, height: MAP_HEIGHT }}
-          initialRegion={{
-            latitude: DEFAULT_LAT,
-            longitude: DEFAULT_LNG,
-            latitudeDelta: 0.02,
-            longitudeDelta: 0.02,
+        {/* Map View */}
+        <Animated.View 
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: pullDownAnim,
+            opacity: headerOpacity,
+            zIndex: 1,
+            overflow: 'hidden'
           }}
-          showsUserLocation={true}
-          zoomEnabled={true}
-          pitchEnabled={true}
-          scrollEnabled={true}
-          rotateEnabled={true}
+          className="bg-gray-50"
         >
-          {houses.map((house, index) => (
-            <Marker
-              key={index}
-              coordinate={{
-                latitude: house.latitude ?? DEFAULT_LAT,
-                longitude: house.longitude ?? DEFAULT_LNG,
-              }}
-              title={formatAddress(house.address)}
-              description={`Owned by ${house.owner.name}`}
-            />
-          ))}
-        </MapView>
-
-        {/* Map search bar and Close button */}
-        <View className="absolute bottom-16 left-0 right-0 px-6 py-3 z-10">
           <TouchableOpacity
-            className="mb-4 bg-primary rounded-full py-3 px-6 self-center"
-            onPress={toggleMap}
+            activeOpacity={1}
+            onPress={dismissKeyboard}
+            style={{ flex: 1 }}
           >
-            <Text className="text-white text-base font-semibold">Close Map</Text>
+            <MapView
+              style={{ width: SCREEN_WIDTH, height: MAP_HEIGHT }}
+              initialRegion={{
+                latitude: DEFAULT_LAT,
+                longitude: DEFAULT_LNG,
+                latitudeDelta: 0.02,
+                longitudeDelta: 0.02,
+              }}
+              showsUserLocation={true}
+              zoomEnabled={true}
+              pitchEnabled={true}
+              scrollEnabled={true}
+              rotateEnabled={true}
+            >
+              {houses.map((house) => (
+                <Marker
+                  key={house.id}
+                  coordinate={{
+                    latitude: house.latitude ?? DEFAULT_LAT,
+                    longitude: house.longitude ?? DEFAULT_LNG,
+                  }}
+                >
+                  <Callout
+                    tooltip={false}
+                    onPress={() => navigateToHouse(house.id)}
+                  >
+                    <View className="bg-white p-2 rounded-md min-w-40">
+                      <Text className="font-bold">{formatAddress(house.address)}</Text>
+                      <Text className="text-sm">{house.min_rent} € - {house.max_rent} €</Text>
+                      <Text className="text-xs text-gray-600">Owned by {house.owner.name}</Text>
+                      <Text className="text-xs text-blue-500 mt-1">Tap to view details</Text>
+                    </View>
+                  </Callout>
+                </Marker>
+              ))}
+            </MapView>
           </TouchableOpacity>
-          
-          <View className="bg-white rounded-full px-6 pb-2 border-2 border-gray-200">
-            <TextInput
-              placeholder="Search location, tags, anything ..."
-              className="text-base py-4"
-            />
-          </View>
-        </View>
-      </Animated.View>
 
-      {/* Main Scrollable Content */}
-      <Animated.View style={{ flex: 1, transform: [{ translateY: pullDownAnim }] }}>
-        {/* Main search bar with map toggle button */}
-        <SearchBar onMapToggle={toggleMap} isMapVisible={isMapVisible} />
-        
-        <Animated.ScrollView
-          className="flex-1 px-6"
-          contentContainerStyle={{ paddingTop: 10, paddingBottom: 100 }}
-          onScroll={Animated.event(
-            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-            { useNativeDriver: true }
-          )}
-          scrollEventThrottle={16}
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={handleRefresh}
-            />
-          }
-        >
-          {houses.map((house, index) => {
-            const ownerPhoto = `https://randomuser.me/api/portraits/men/${house.randomUserId || 1}.jpg`;
-            
-            return (
-              <PropertyCard
-                key={house.id || index}
-                id={house.id}
-                location={formatAddress(house.address)}
-                minRent={house.min_rent}
-                maxRent={house.max_rent}
-                ownerName={house.owner.name}
-                randomUserId={house.randomUserId || 1}
-                image={house.image}
-                ownerPhoto={ownerPhoto}
-                isFavorite={favorites.has(house.id)}
-                onToggleFavorite={toggleFavorite}
-                latitude={house.latitude}
-                longitude={house.longitude}
+          {/* Map search bar that adjusts with keyboard and stays above bottom navigation */}
+          <Animated.View 
+            style={{
+              position: 'absolute',
+              bottom: keyboardAnim.interpolate({
+                inputRange: [0, keyboardHeight],
+                outputRange: [80, keyboardHeight], // 80px (5rem) above bottom navigation
+                extrapolate: 'clamp',
+              }),
+              left: 0,
+              right: 0,
+              paddingBottom: 4,
+              paddingTop: 2,
+              paddingHorizontal: 24,
+              zIndex: 10
+            }}
+          >
+            <View className="flex-row items-center bg-white rounded-2xl border-2 border-gray-200 overflow-hidden my-4 shadow-lg">
+              <TextInput
+                placeholder="Search a city ..."
+                className="flex-1 text-base py-4 px-6"
+                onFocus={() => {
+                  // Extra handling if needed on focus
+                }}
               />
-            );
-          })}
-        </Animated.ScrollView>
-      </Animated.View>
+              <TouchableOpacity 
+                className="bg-primary p-3 rounded-full mr-2"
+                onPress={toggleMap}
+                accessibilityLabel="Hide map"
+              >
+                <View className="w-6 h-6 items-center justify-center">
+                <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
+                  <Path
+                    d="M6 6l12 12M6 18L18 6"
+                    stroke="#ffffff"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </Svg>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </Animated.View>
 
-      {/* Fixed Bottom Navigation */}
-      <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 10 }}>
-        <BottomNavigation />
-      </View>
-    </SafeAreaView>
+        {/* Main Scrollable Content */}
+        <Animated.View 
+          style={{ 
+            flex: 1, 
+            transform: [{ translateY: pullDownAnim }],
+          }}
+        >
+          {/* Main search bar with map toggle button */}
+          <SearchBar onMapToggle={toggleMap} isMapVisible={isMapVisible} />
+          
+          <Animated.ScrollView
+            className="flex-1 px-6"
+            contentContainerStyle={{ paddingTop: 10, paddingBottom: 100 }}
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+              { useNativeDriver: true }
+            )}
+            scrollEventThrottle={16}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={handleRefresh}
+              />
+            }
+            keyboardShouldPersistTaps="handled"
+          >
+            {houses.map((house, index) => {
+              const ownerPhoto = `https://randomuser.me/api/portraits/men/${house.randomUserId || 1}.jpg`;
+              
+              return (
+                <PropertyCard
+                  key={house.id || index}
+                  id={house.id}
+                  location={formatAddress(house.address)}
+                  minRent={house.min_rent}
+                  maxRent={house.max_rent}
+                  ownerName={house.owner.name}
+                  randomUserId={house.randomUserId || 1}
+                  image={house.image}
+                  ownerPhoto={ownerPhoto}
+                  isFavorite={favorites.has(house.id)}
+                  onToggleFavorite={toggleFavorite}
+                  latitude={house.latitude}
+                  longitude={house.longitude}
+                />
+              );
+            })}
+          </Animated.ScrollView>
+        </Animated.View>
+
+        {/* Fixed Bottom Navigation */}
+        <Animated.View 
+          style={{ 
+            position: 'absolute', 
+            bottom: 0, 
+            left: 0, 
+            right: 0, 
+            zIndex: 10,
+            transform: [
+              {
+                translateY: keyboardVisible ? keyboardAnim : 0
+              }
+            ]
+          }}
+        >
+          <BottomNavigation />
+        </Animated.View>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 };
 
