@@ -14,7 +14,7 @@ const BottomNavigation = () => {
       // Navigate to the appropriate screen based on tab
       switch (tabName) {
         case "home":
-          router.push("/home")
+          router.push("/management")
           break
         case "favorites":
           router.push("/")
@@ -23,7 +23,7 @@ const BottomNavigation = () => {
           router.push("/")
           break
         case "profile":
-          router.push("/")
+          router.push("/profile")
           break
         // Search tab doesn't navigate since we're already in a search result
       }

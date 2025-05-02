@@ -91,3 +91,36 @@ export async function removeApplyToJoin(house_id : string, user_id: string, toke
     });
     return response.data;
 }
+
+export async function getUserHouses(user_id: string, token: string) {
+    const response = await API.get(`/houses/living/${user_id}`, {
+        params: {
+            user_id
+        },
+        headers: {
+            Authorization: `Bearer ${token}`,
+        }
+    });
+    console.log("User houses", response.data);
+    return response.data;
+}
+
+export async function getHouseTasks(house_id: string, token: string) {
+    const response = await API.get(`/houses/${house_id}/tasks`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        }
+    });
+    console.log("House tasks", response.data);
+    return response.data;
+}
+
+export async function getHouseBills(house_id: string, token: string) {
+    const response = await API.get(`/houses/${house_id}/bills`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        }
+    });
+    console.log("House bills", response.data);
+    return response.data;
+}

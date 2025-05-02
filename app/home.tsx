@@ -101,7 +101,7 @@ const PropertyCard = ({
     >
       {/* Property Image */}
       <View className="relative">
-        <View className="h-64 bg-gray-300">
+        <View className="h-64">
           <Image
             source={{ uri: houseImage }}
             className="w-full h-full"
@@ -382,7 +382,7 @@ const HomeScreen = () => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1">
       <StatusBar barStyle="dark-content" />
 
       {/* Pull-down Map View */}
@@ -427,7 +427,7 @@ const HomeScreen = () => {
         </MapView>
 
         {/* Map search bar and Close button */}
-        <View className="absolute bottom-16 left-0 right-0 px-6 py-3 bg-gray-50 z-10">
+        <View className="absolute bottom-16 left-0 right-0 px-6 py-3 z-10">
           <TouchableOpacity
             className="mb-4 bg-primary rounded-full py-3 px-6 self-center"
             onPress={handleCollapseHeader}
