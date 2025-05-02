@@ -19,7 +19,8 @@ type PropertyCardProps = {
   id: string,
   location: string;
   ownerName: string;
-  rent: string;
+  minRent: number;
+  maxRent: number;
   randomHouseId: number;
   randomUserId: number;
   image: string;
@@ -27,7 +28,7 @@ type PropertyCardProps = {
 
 const API_URL = Constants.expoConfig?.extra?.apiUrl
 
-const PropertyCard = ({ id, location, ownerName, rent, randomUserId, image }: PropertyCardProps) => {
+const PropertyCard = ({ id, location, ownerName, minRent, maxRent, randomUserId, image }: PropertyCardProps) => {
   const houseImage = API_URL.replace("/api", "") + image;
   
   return (
@@ -49,7 +50,7 @@ const PropertyCard = ({ id, location, ownerName, rent, randomUserId, image }: Pr
       <View className="p-4">
         <View className="flex-row justify-between items-center">
           <Text className="text-2xl font-semibold">{location}</Text>
-          <Text className="text-lg">{rent} €</Text>
+          <Text className="text-lg">{minRent} € - {maxRent} €</Text>
         </View>
 
         {/* Profile Section */}
@@ -114,7 +115,8 @@ const App = () => {
             id={house.id}
             key={index}
             location={formatAddress(house.address)}
-            rent={house.rent}
+            minRent={house.min_rent}
+            maxRent={house.max_rent}
             ownerName={house.owner.name}
             randomHouseId={house.randomHouseId}
             randomUserId={house.randomUserId}
