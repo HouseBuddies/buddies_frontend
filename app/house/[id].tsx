@@ -1,8 +1,17 @@
 "use client"
 
+import BottomNavigation from "@/components/BottomNavigation"
 import { useAuth } from "@/context/AuthContext"
 import { fetchUserInfo } from "@/data/auth/auth"
-import { addFavoriteHouse, getUserFavoriteHouses, removeFavoriteHouse, showHouse } from "@/data/houses/houses"
+import {
+  addFavoriteHouse,
+  applyToJoin,
+  getUserFavoriteHouses,
+  has_applyToJoin,
+  removeApplyToJoin,
+  removeFavoriteHouse,
+  showHouse,
+} from "@/data/houses/houses"
 import Constants from "expo-constants"
 import { Link, useLocalSearchParams } from "expo-router"
 import { useCallback, useEffect, useState } from "react"
@@ -18,6 +27,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native"
+
 
 const API_URL = Constants.expoConfig?.extra?.apiUrl || ""
 const apiKey = Constants.expoConfig?.extra?.googleApiKey
@@ -62,7 +72,9 @@ const HouseDetails = () => {
   const [user, setUser] = useState<User | null>(null)
   const [house, setHouse] = useState<House | null>(null)
   const [favourite, setFavourite] = useState(false)
+  const [hasApplied, setHasApplied] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [isApplying, setIsApplying] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Custom map dimensions - adjust these values as needed
@@ -105,6 +117,19 @@ const HouseDetails = () => {
 
         if (userResponse?.user) {
           setUser(userResponse.user)
+
+          // Now that we have both user and house data, check if user has applied
+          if (houseResponse?.data) {
+            try {
+              const applicationStatus = await has_applyToJoin(houseResponse.data.id, userResponse.user.id, token)
+              // Assuming the API returns a boolean or an object with a boolean property
+              // Adjust this based on your actual API response structure
+              setHasApplied(!!applicationStatus.hasApplied || !!applicationStatus.exists || !!applicationStatus)
+            } catch (err) {
+              console.error("Error checking application status:", err)
+              // Don't set error state here, just log it - we still want to show the house
+            }
+          }
         }
 
         if (houseResponse?.data) {
@@ -166,6 +191,81 @@ const HouseDetails = () => {
     }
   }, [favourite, house, user, token])
 
+  // Handle apply to join
+  const handleApplyToJoin = useCallback(async () => {
+    if (!house?.id || !token || !user?.id) {
+      Alert.alert("Error", "Unable to apply for this house")
+      return
+    }
+
+    try {
+      setIsApplying(true)
+
+      if (hasApplied) {
+        // If already applied, show confirmation to remove application
+        Alert.alert("Cancel Application", "Are you sure you want to cancel your application for this house?", [
+          {
+            text: "No",
+            style: "cancel",
+            onPress: () => setIsApplying(false),
+          },
+          {
+            text: "Yes, Cancel",
+            style: "destructive",
+            onPress: async () => {
+              try {
+                const response = await removeApplyToJoin(house.id, user.id, token)
+                if (response) {
+                  setHasApplied(false)
+                  Alert.alert("Success", "Your application has been cancelled.")
+                } else {
+                  Alert.alert("Error", "Failed to cancel application")
+                }
+              } catch (error) {
+                console.error("Error cancelling application:", error)
+                Alert.alert("Error", "An error occurred while cancelling your application")
+              } finally {
+                setIsApplying(false)
+              }
+            },
+          },
+        ])
+      } else {
+        // If not applied, show confirmation to apply
+        Alert.alert("Apply to Join", "Are you sure you want to apply to join this house?", [
+          {
+            text: "Cancel",
+            style: "cancel",
+            onPress: () => setIsApplying(false),
+          },
+          {
+            text: "Apply",
+            onPress: async () => {
+              try {
+                const response = await applyToJoin(house.id, user.id, token)
+                if (response) {
+                  setHasApplied(true)
+                  Alert.alert("Success", "Your application has been submitted!")
+                } else {
+                  Alert.alert("Error", "Failed to submit application")
+                }
+              } catch (error) {
+                console.error("Error applying to join:", error)
+                Alert.alert("Error", "An error occurred while submitting your application")
+              } finally {
+                setIsApplying(false)
+              }
+            },
+          },
+        ])
+      }
+    } catch (err) {
+      console.error("Error with application process:", err)
+      Alert.alert("Error", "An error occurred with your application")
+      setIsApplying(false)
+    }
+  }, [house, user, token, hasApplied])
+
   // Create static map URL with only a circle (no marker)
   const getStaticMapUrl = useCallback(() => {
     if (!house?.address || !apiKey) return ""
@@ -186,6 +286,7 @@ const HouseDetails = () => {
       `&key=${apiKey}`
     )
   }, [house, mapSize, apiKey])
+
 
   const houseImage = house?.image ? `${API_URL.replace("/api", "")}${house.image}` : ""
 
@@ -251,15 +352,33 @@ const HouseDetails = () => {
           </View>
 
           {/* Profile Section */}
-          <View className="flex-row items-center mt-4">
-            <Image source={{ uri: house?.owner?.photo }} className="w-12 h-12 rounded-full bg-gray-200" />
-            <Text className="ml-3 text-lg">{house?.owner?.name || "Unknown Owner"}</Text>
+          <View className="flex-row items-center justify-between mt-4">
+            <View className="flex-row items-center">
+              <Image source={{ uri: house?.owner?.photo }} className="w-12 h-12 rounded-full bg-gray-200" />
+              <Text className="ml-3 text-lg">{house?.owner?.name || "Unknown Owner"}</Text>
+            </View>
+
+            {/* Apply to Join Button */}
+            <TouchableOpacity
+              onPress={handleApplyToJoin}
+              disabled={isApplying}
+              className={`${hasApplied ? "bg-red-500" : "bg-blue-500"} py-2 px-4 rounded-lg ${isApplying ? "opacity-70" : ""}`}
+              accessibilityLabel={hasApplied ? "Cancel application" : "Apply to join this house"}
+            >
+              {isApplying ? (
+                <ActivityIndicator size="small" color="#ffffff" />
+              ) : (
+                <Text className="text-white text-center font-bold">
+                  {hasApplied ? "Cancel Application" : "Apply to Join"}
+                </Text>
+              )}
+            </TouchableOpacity>
           </View>
 
           {/* Interests Section */}
           {house?.tags && house.tags.length > 0 && (
             <View className="mt-6">
-              <Text className="text-xl mb-3">Technical Features</Text>
+              <Text className="text-xl mb-3">Interesses</Text>
               <View className="flex-row flex-wrap gap-2">
                 {house.tags.map((interest, index) => (
                   <View key={index} className="py-2 px-4 border border-gray-300 rounded-full">
@@ -269,6 +388,64 @@ const HouseDetails = () => {
               </View>
             </View>
           )}
+
+          {/* Property Features Section */}
+          <View className="mt-6">
+            <Text className="text-xl mb-3">Características específicas</Text>
+            <View className="space-y-2">
+              {[
+                "58 m² área bruta",
+                "T1",
+                "1 casa de banho",
+                "Varanda",
+                "Lugar de garagem incluído no preço",
+                "Segunda mão/bom estado",
+                "Armários embutidos",
+                "Orientação Sul",
+                "Mobilado e cozinha equipada",
+                "Aquecimento individual: Elétrico",
+              ].map((item, index) => (
+                <View key={index} className="flex-row items-center">
+                  <Text className="text-base">• {item}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          {/* Two-Column Section */}
+          <View className="flex-row mt-6">
+            {/* Left Column */}
+            <View className="flex-1 pr-2">
+              <Text className="text-xl mb-3">Equipamento</Text>
+              <View className="space-y-2">
+                <View className="flex-row items-center">
+                  <Text className="text-base">• Ar condicionado</Text>
+                </View>
+              </View>
+
+              <View className="mt-6">
+                <Text className="text-xl mb-3">Prédio</Text>
+                <View className="space-y-2">
+                  <View className="flex-row items-center">
+                    <Text className="text-base">• 1º andar</Text>
+                  </View>
+                  <View className="flex-row items-center">
+                    <Text className="text-base">• Com elevador</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+
+            {/* Right Column */}
+            <View className="flex-1 pl-2">
+              <Text className="text-xl mb-3">Certificado energético</Text>
+              <View className="space-y-2">
+                <View className="flex-row items-center">
+                  <Text className="text-base">• Classe energética: A+</Text>
+                </View>
+              </View>
+            </View>
+          </View>
 
           {/* Address Section */}
           <View className="mt-6">
@@ -284,30 +461,14 @@ const HouseDetails = () => {
             </View>
           </View>
         </View>
+
+        {/* Apply to Join Button */}
       </ScrollView>
 
-      {/* Bottom Navigation */}
-      <View className="flex-row justify-between items-center p-4 border-t border-gray-200">
-        <TouchableOpacity className="items-center" accessibilityLabel="Add">
-          <Text className="text-2xl">⊞</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center" accessibilityLabel="Favorites">
-          <Text className="text-2xl">★</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center" accessibilityLabel="Search">
-          <View className="w-12 h-12 bg-blue-500 rounded-full items-center justify-center">
-            <Text className="text-2xl text-white">🔍</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center" accessibilityLabel="Messages">
-          <Text className="text-2xl">💬</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center" accessibilityLabel="Profile">
-          <Text className="text-2xl">👤</Text>
-        </TouchableOpacity>
-      </View>
+{/* Bottom Navigation Bar with Improved Icons */}
+            <BottomNavigation />
     </SafeAreaView>
   )
 }
 
-export default HouseDetails
+export default HouseDetails;
