@@ -1,3 +1,4 @@
+import { router } from "expo-router"
 import { SafeAreaView, ScrollView, Text, TouchableOpacity, View } from "react-native"
 
 export default function SummaryScreen({ navigation, route }) {
@@ -94,7 +95,7 @@ export default function SummaryScreen({ navigation, route }) {
       <View className="px-6 py-4 border-t border-gray-200">
       <TouchableOpacity
           className={`rounded-2xl p-5 items-center bg-primary`}
-          onPress={() => navigation.navigate("Welcome")}
+          onPress={() => router.navigate("/home")}
         >
           <Text className="text-white font-bold text-lg">Let's do this!  🎉</Text>
         </TouchableOpacity>

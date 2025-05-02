@@ -3,20 +3,20 @@ import { sign_in } from "@/data";
 import { Link, router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    Alert,
-    Image,
-    Keyboard,
-    KeyboardAvoidingView,
-    LayoutAnimation,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    UIManager,
-    View
+  Alert,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  LayoutAnimation,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  UIManager,
+  View
 } from "react-native";
 
 
@@ -71,7 +71,13 @@ const LoginPage = () => {
       const response = await sign_in(email, password);
       const data = await response.data;
       await setToken(data.user.token);
-      router.push("/home");
+
+      if (data.user.first_time_login) {
+        router.push("/onboard");
+      } else {
+        router.push("/home");
+      }
+
     } catch (error) {
         Alert.alert("Login Failed", "Invalid email or password.");
         setPassword("");
