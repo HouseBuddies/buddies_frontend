@@ -53,3 +53,41 @@ export async function getUserFavoriteHouses(user_id : string, token : string) {
     })
     return response.data;
 }
+
+export async function has_applyToJoin(house_id : string, user_id: string, token : string) {
+    const response = await API.get(`/houses/${house_id}/join_request`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+        params: {
+            user_id,
+            house_id
+        }
+    });
+    return response.data;
+}
+
+export async function applyToJoin(house_id : string, user_id: string, token : string) {
+    const response = await API.post(`/houses/${house_id}/join`, {
+        user_id,
+        house_id
+    }, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        }
+    })
+    return response.data;
+}
+
+export async function removeApplyToJoin(house_id : string, user_id: string, token : string) {
+    const response = await API.delete(`/houses/${house_id}/join`, {
+        data: {
+            user_id,
+            house_id
+        },
+        headers: {
+            Authorization: `Bearer ${token}`,
+        }
+    });
+    return response.data;
+}
