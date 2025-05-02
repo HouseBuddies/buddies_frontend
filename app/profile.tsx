@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import BottomNavigation from '@/components/BottomNavigation';
 import { useAuth } from '@/context/AuthContext';
-import { View, Text, Image, TouchableOpacity, ScrollView, SafeAreaView, StatusBar, ActivityIndicator, Alert } from 'react-native';
-import { Feather } from '@expo/vector-icons';
 import { fetchUserInfo } from '@/data/auth/auth';
+import { Feather } from '@expo/vector-icons';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, Image, SafeAreaView, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native';
 
-// Define the user interface
 interface User {
   id: string;
   name: string;
@@ -24,7 +24,7 @@ const SettingsScreen = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { token, logout } = useAuth(); // Assuming logout function exists in AuthContext
+  const { token } = useAuth(); // Assuming logout function exists in AuthContext
 
   // Fetch user data when component mounts
   useEffect(() => {
@@ -70,11 +70,8 @@ const SettingsScreen = () => {
           style: "destructive",
           onPress: () => {
             // Call logout function from AuthContext
-            if (typeof logout === 'function') {
-              logout();
-            } else {
-              console.log('Logout function not available');
-            }
+            // Assuming logout function exists in AuthContext
+            console.log('Logout pressed');
           }
         }
       ]
@@ -253,25 +250,8 @@ const SettingsScreen = () => {
         </TouchableOpacity>
       </ScrollView>
       
-      {/* Bottom Navigation */}
-      <View className="flex-row justify-around items-center py-3 border-t border-gray-200 bg-white">
-        <TouchableOpacity className="items-center">
-          <Feather name="grid" size={24} color="#1f2937" />
-          <Text className="text-xs text-gray-500 mt-1">Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center">
-          <Feather name="star" size={24} color="#1f2937" />
-          <Text className="text-xs text-gray-500 mt-1">Favorites</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center">
-          <Feather name="search" size={24} color="#1f2937" />
-          <Text className="text-xs text-gray-500 mt-1">Search</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center">
-          <Feather name="user" size={24} color="#3b82f6" />
-          <Text className="text-xs text-blue-500 font-medium mt-1">Profile</Text>
-        </TouchableOpacity>
-      </View>
+      <BottomNavigation />
+      
     </SafeAreaView>
   );
 };
