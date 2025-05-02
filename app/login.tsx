@@ -21,7 +21,7 @@ import {
 
 
 const LoginPage = () => {
-  const { setToken } = useAuth();
+  const { token, setToken } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -69,16 +69,13 @@ const LoginPage = () => {
         return;
       }
       const response = await sign_in(email, password);
-      if (response.status !== 200) {
-        Alert.alert("Login Failed", "Invalid email or password.");
-        return;
-      }
       const data = await response.data;
       await setToken(data.user.token);
       router.push("/home");
     } catch (error) {
-      Alert.alert("Login Failed", "Something went wrong.");
-      console.error(error);
+        Alert.alert("Login Failed", "Invalid email or password.");
+        setPassword("");
+        setEmail("");
     } finally {
       setIsLoading(false);
     }
