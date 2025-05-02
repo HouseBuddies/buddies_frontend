@@ -1,8 +1,50 @@
-import { router } from "expo-router"
-import { SafeAreaView, ScrollView, Text, TouchableOpacity, View } from "react-native"
+import { useAuth } from "@/context/AuthContext";
+import { updateUserPreferences } from "@/data/users";
+import { router } from "expo-router";
+import { SafeAreaView, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 export default function SummaryScreen({ navigation, route }) {
   const { demographics, livingPreferences, personalityLifestyle } = route.params
+  const { token } = useAuth()
+
+  async function sendPreferences() {
+    const rawData = {
+      ...demographics,
+      ...livingPreferences,
+      ...personalityLifestyle
+    };
+  
+    const keyMap = {
+      age: "age",
+      alcohol: "alcohol",
+      cleanliness: "desired_cleanliness",
+      dietaryRestrictions: "dietary_restrictions",
+      gender: "gender",
+      incomeRange: "income_range",
+      maxRent: "max_rent",
+      moveInDate: "move_in_date",
+      neighborhood: "location",
+      noiseTolerance: "noise_tolerance",
+      occupation: "occupation",
+      pets: "pets",
+      sleepSchedule: "sleep_schedule",
+      smoking: "smoker",
+      visitors: "visitors",
+      workSchedule: "work_schedule"
+    };
+  
+    const data = Object.entries(rawData).reduce((acc, [key, value]) => {
+      const backendKey = keyMap[key];
+      if (backendKey) {
+        acc[backendKey] = value;
+      }
+      return acc;
+    }, {});
+
+    console.log(data)
+  
+    await updateUserPreferences(token || "", data);
+  }
 
   const formatDate = (date : any) => {
     if (!date) return "Not specified"
@@ -14,7 +56,7 @@ export default function SummaryScreen({ navigation, route }) {
   }
 
   function formatName(name: string) {
-    return name.charAt(0).toUpperCase() + name.slice(1).replace("-", " ")
+    return name.charAt(0).toUpperCase() + name.slice(1).replace("_", " ")
   }
 
   const renderSection = (title, items) => (
@@ -33,8 +75,8 @@ export default function SummaryScreen({ navigation, route }) {
 
   const demographicsItems = [
     { label: "Age", value: demographics?.age || "Not specified" },
-    { label: "Gender", value: demographics?.gender || "Not specified" },
-    { label: "Occupation", value: demographics?.occupation || "Not specified" },
+    { label: "Gender", value: formatName(demographics?.gender) || "Not specified" },
+    { label: "Occupation", value: formatName(demographics?.occupation) || "Not specified" },
   ]
 
   const livingPreferencesItems = [
@@ -60,14 +102,14 @@ export default function SummaryScreen({ navigation, route }) {
         ? personalityLifestyle.pets.map((e) => e.charAt(0).toUpperCase() + e.slice(1).replace("-", " ")).join(", ")
         : "None"
     },
-    { label: "Smoking", value: formatName(personalityLifestyle?.smoking) || "Not specified" },
+    { label: "Smoking", value: personalityLifestyle?.smoker ? "Yes" : "No" },
     {
       label: "Alcohol",
       value: personalityLifestyle?.alcohol
         ? formatName(personalityLifestyle.alcohol)
         : "Not specified"
     },
-    { label: "Visitors", value: formatName(personalityLifestyle?.visitors) || "Not specified" },
+    { label: "Visitors", value: ["Often", "Sometimes", "Rarely", "Never"][personalityLifestyle?.visitors] || "Not specified" },
     {
       label: "Dietary Restrictions",
       value: personalityLifestyle?.dietaryRestrictions?.length
@@ -95,7 +137,7 @@ export default function SummaryScreen({ navigation, route }) {
       <View className="px-6 py-4 border-t border-gray-200">
       <TouchableOpacity
           className={`rounded-2xl p-5 items-center bg-primary`}
-          onPress={() => router.navigate("/home")}
+          onPress={() => sendPreferences().then(router.push("/home"))}
         >
           <Text className="text-white font-bold text-lg">Let's do this!  🎉</Text>
         </TouchableOpacity>

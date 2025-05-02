@@ -47,13 +47,16 @@ export default function DemographicsScreen({ navigation, route }) {
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingRight: 16 }}
-              className="mb-4">{["Female", "Male", "Non Binary", "Prefer not to say"].map((item) => (
+              className="mb-4">{[{ label: "Female", value: "female" },
+                { label: "Male", value: "male" },
+                { label: "Non Binary", value: "non_binary" },
+                { label: "Prefer not to say", value: "not_say" }].map((item) => (
               <TouchableOpacity
-                key={item}
-                className={`mr-3 mb-2 px-4 py-2 rounded-full ${gender === item ? "bg-primary" : "bg-gray-200"}`}
-                onPress={() => setGender(item)}
+                key={item.value}
+                className={`mr-3 mb-2 px-4 py-2 rounded-full ${gender === item.value ? "bg-primary" : "bg-gray-200"}`}
+                onPress={() => setGender(item.value)}
               >
-                <Text className={`${gender === item ? "text-white" : "text-gray-800"}`}>{item}</Text>
+                <Text className={`${gender === item.value ? "text-white" : "text-gray-800"}`}>{item.label}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>

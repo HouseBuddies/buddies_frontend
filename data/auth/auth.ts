@@ -24,6 +24,5 @@ export async function fetchUserInfo(token: string) {
       Authorization: `Bearer ${token}`,
     },
   });
-  console.log("User data:", response.data);
   return response.data;
 }

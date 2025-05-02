@@ -10,9 +10,9 @@ export default function PersonalityLifestyleScreen({ navigation, route }: { navi
   const [noiseTolerance, setNoiseTolerance] = useState(3)
   const [sleepSchedule, setSleepSchedule] = useState("")
   const [pets, setPets] = useState([])
-  const [smoking, setSmoking] = useState("")
+  const [smoking, setSmoking] = useState(null)
   const [alcohol, setAlcohol] = useState("")
-  const [visitors, setVisitors] = useState("")
+  const [visitors, setVisitors] = useState(null)
   const [dietaryRestrictions, setDietaryRestrictions] = useState([])
 
   const handleNext = () => {
@@ -60,7 +60,7 @@ export default function PersonalityLifestyleScreen({ navigation, route }: { navi
     }
   }
 
-  const isFormValid = sleepSchedule && smoking && alcohol && visitors
+  const isFormValid = sleepSchedule && (smoking != null) && alcohol && visitors
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -128,8 +128,8 @@ export default function PersonalityLifestyleScreen({ navigation, route }: { navi
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingRight: 16 }}
               className="mb-4">{[
-              { emoji: "🌅", label: "Early Bird", value: "early-bird" },
-              { emoji: "🦉", label: "Night Owl", value: "night-owl" },
+              { emoji: "🌅", label: "Early Bird", value: "early_bird" },
+              { emoji: "🦉", label: "Night Owl", value: "night_owl" },
               { emoji: "📊", label: "Regular", value: "regular" },
               { emoji: "🔄", label: "Variable", value: "variable" },
             ].map((item) => (
@@ -157,8 +157,8 @@ export default function PersonalityLifestyleScreen({ navigation, route }: { navi
               { emoji: "🐱", label: "Cat", value: "cat" },
               { emoji: "🐦", label: "Bird", value: "bird" },
               { emoji: "🐠", label: "Fish", value: "fish" },
-              { emoji: "🐹", label: "Small Pet", value: "small-pet" },
-              { emoji: "❌", label: "No Pets", value: "no-pets" },
+              { emoji: "🐹", label: "Small Pet", value: "small_pet" },
+              { emoji: "❌", label: "No Pets", value: "no_pets" },
             ].map((item) => (
               <TouchableOpacity
                 key={item.value}
@@ -180,8 +180,8 @@ export default function PersonalityLifestyleScreen({ navigation, route }: { navi
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingRight: 16 }}
               className="mb-4">{[
-              { emoji: "🚬", label: "Smoker", value: "smoker" },
-              { emoji: "🚭", label: "Non-smoker", value: "non-smoker" }
+              { emoji: "🚬", label: "Smoker", value: true },
+              { emoji: "🚭", label: "Non-smoker", value: false }
             ].map((item) => (
               <TouchableOpacity
                 key={item.value}
@@ -224,10 +224,10 @@ export default function PersonalityLifestyleScreen({ navigation, route }: { navi
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingRight: 16 }}
               className="mb-4">{[
-              { emoji: "👥", label: "Often", value: "often" },
-              { emoji: "👤", label: "Sometimes", value: "sometimes" },
-              { emoji: "🧍", label: "Rarely", value: "rarely" },
-              { emoji: "🚫", label: "Never", value: "never" },
+              { emoji: "👥", label: "Often", value: 3 },
+              { emoji: "👤", label: "Sometimes", value: 2 },
+              { emoji: "🧍", label: "Rarely", value: 1 },
+              { emoji: "🚫", label: "Never", value: 0 },
             ].map((item) => (
               <TouchableOpacity
                 key={item.value}
@@ -253,8 +253,8 @@ export default function PersonalityLifestyleScreen({ navigation, route }: { navi
               { emoji: "🥗", label: "Vegetarian", value: "vegetarian" },
               { emoji: "🌱", label: "Vegan", value: "vegan" },
               { emoji: "🍖", label: "Carnivore", value: "carnivore" },
-              { emoji: "🥛", label: "Lactose-free", value: "lactose-free" },
-              { emoji: "🌾", label: "Gluten-free", value: "gluten-free" },
+              { emoji: "🥛", label: "Lactose-free", value: "lactose_free" },
+              { emoji: "🌾", label: "Gluten-free", value: "gluten_free" },
               { emoji: "🍯", label: "Halal", value: "halal" },
               { emoji: "✡️", label: "Kosher", value: "kosher" },
               { emoji: "🚫", label: "None", value: "none" },
