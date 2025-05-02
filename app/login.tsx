@@ -7,6 +7,7 @@ import {
     Image,
     Keyboard,
     KeyboardAvoidingView,
+    LayoutAnimation,
     Platform,
     SafeAreaView,
     ScrollView,
@@ -14,6 +15,7 @@ import {
     TextInput,
     TouchableOpacity,
     TouchableWithoutFeedback,
+    UIManager,
     View
 } from "react-native";
 
@@ -26,14 +28,24 @@ const LoginPage = () => {
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   useEffect(() => {
+    if (Platform.OS === 'android') {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        UIManager.setLayoutAnimationEnabledExperimental?.(true);
+    }
     // Add keyboard show/hide listeners
     const keyboardDidShowListener = Keyboard.addListener(
       'keyboardDidShow',
-      () => setKeyboardVisible(true)
+      () => {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        setKeyboardVisible(true)
+    }
     );
     const keyboardDidHideListener = Keyboard.addListener(
       'keyboardDidHide',
-      () => setKeyboardVisible(false)
+      () => {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        setKeyboardVisible(false)
+        }
     );
 
     // Clean up listeners
@@ -46,7 +58,7 @@ const LoginPage = () => {
   const oauthProviders = [
     { color: "#ED3241", name: "google", image: require("@/assets/images/oauth/google.png") },
     { color: "#000000", name: "apple", image: require("@/assets/images/oauth/apple.png") },
-    { color: "#ED3241", name: "facebook", image: require("@/assets/images/oauth/google.png") }
+    { color: "#00A4EF", name: "microsoft", image: require("@/assets/images/oauth/microsoft.png") }
   ];
 
   const login = async () => {
