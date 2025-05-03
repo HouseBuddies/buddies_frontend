@@ -175,7 +175,7 @@ const PropertyCard = ({
 };
 
 const HomeScreen = () => {
-  const { token } = useAuth();
+  const [token, setToken] = useState<string | null>(null);
   const [houses, setHouses] = useState<House[]>([]);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [user, setUser] = useState<User | null>(null);
@@ -185,10 +185,28 @@ const HomeScreen = () => {
   const [isMapVisible, setIsMapVisible] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [mapSearchQuery, setMapSearchQuery] = useState('');
+  const [region, setRegion] = useState({
+    latitude: DEFAULT_LAT,
+    longitude: DEFAULT_LNG,
+    latitudeDelta: 0.02,
+    longitudeDelta: 0.02,
+  });
+  const [showLocationNotFound, setShowLocationNotFound] = useState(false);
+  const mapRef = useRef<MapView>(null);
 
   const scrollY = useRef(new Animated.Value(0)).current;
   const pullDownAnim = useRef(new Animated.Value(0)).current;
   const keyboardAnim = useRef(new Animated.Value(0)).current;
+  const notFoundPopupAnim = useRef(new Animated.Value(0)).current;
+
+  // Access auth context in useEffect to avoid rendering phase updates
+  const auth = useAuth();
+  useEffect(() => {
+    if (auth?.token) {
+      setToken(auth.token);
+    }
+  }, [auth]);
 
   // Add keyboard event listeners
   useEffect(() => {
@@ -225,6 +243,28 @@ const HomeScreen = () => {
       keyboardWillHideSub.remove();
     };
   }, []);
+
+  // Handle location not found popup animation
+  useEffect(() => {
+    if (showLocationNotFound) {
+      // Show popup
+      Animated.sequence([
+        Animated.timing(notFoundPopupAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.delay(2000), // Show for 2 seconds
+        Animated.timing(notFoundPopupAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        })
+      ]).start(() => {
+        setShowLocationNotFound(false);
+      });
+    }
+  }, [showLocationNotFound]);
 
   const formatAddress = useCallback((address: string) => {
     if (!address) return '';
@@ -319,15 +359,17 @@ const HomeScreen = () => {
 
   // Initial data loading
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (token) {
+      loadData();
+    }
+  }, [loadData, token]);
 
   // Fetch favorites when user is loaded
   useEffect(() => {
-    if (user) {
+    if (user && token) {
       fetchFavorites();
     }
-  }, [user, fetchFavorites]);
+  }, [user, fetchFavorites, token]);
 
   const handleRefresh = useCallback(() => {
     loadData(true);
@@ -393,6 +435,37 @@ const HomeScreen = () => {
     }
   }, [isMapVisible, pullDownAnim]);
 
+  // Search city using Nominatim API
+  const searchCity = useCallback(async () => {
+    if (!mapSearchQuery) return;
+
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(mapSearchQuery)}&limit=1`
+      );
+      const data = await response.json();
+      
+      if (data && data.length > 0) {
+        const { lat, lon } = data[0];
+        const newRegion = {
+          latitude: parseFloat(lat),
+          longitude: parseFloat(lon),
+          latitudeDelta: 0.02,
+          longitudeDelta: 0.02,
+        };
+        
+        setRegion(newRegion);
+        mapRef.current?.animateToRegion(newRegion, 1000);
+      } else {
+        // Show location not found popup instead of Alert
+        setShowLocationNotFound(true);
+      }
+    } catch (err) {
+      console.error('Error searching city:', err);
+      setShowLocationNotFound(true);
+    }
+  }, [mapSearchQuery]);
+
   const headerOpacity = pullDownAnim.interpolate({
     inputRange: [0, 100],
     outputRange: [0, 1],
@@ -404,7 +477,7 @@ const HomeScreen = () => {
     Keyboard.dismiss();
   }, []);
 
-  if (isLoading) {
+  if (isLoading && !token) {
     return (
       <SafeAreaView className="flex-1 bg-gray-50 justify-center items-center">
         <ActivityIndicator size="large" color="#0000ff" />
@@ -455,13 +528,9 @@ const HomeScreen = () => {
             style={{ flex: 1 }}
           >
             <MapView
+              ref={mapRef}
               style={{ width: SCREEN_WIDTH, height: MAP_HEIGHT }}
-              initialRegion={{
-                latitude: DEFAULT_LAT,
-                longitude: DEFAULT_LNG,
-                latitudeDelta: 0.02,
-                longitudeDelta: 0.02,
-              }}
+              region={region}
               showsUserLocation={true}
               zoomEnabled={true}
               pitchEnabled={true}
@@ -511,29 +580,58 @@ const HomeScreen = () => {
           >
             <View className="flex-row items-center bg-white rounded-2xl border-2 border-gray-200 overflow-hidden my-4 shadow-lg">
               <TextInput
-                placeholder="Search a city ..."
+                placeholder="Search a city or location..."
                 className="flex-1 text-base py-4 px-6"
-                onFocus={() => {
-                  // Extra handling if needed on focus
-                }}
+                value={mapSearchQuery}
+                onChangeText={setMapSearchQuery}
+                onSubmitEditing={searchCity}
+                returnKeyType="search"
               />
-              <TouchableOpacity 
-                className="bg-primary p-3 rounded-full mr-2"
-                onPress={toggleMap}
-                accessibilityLabel="Hide map"
-              >
-                <View className="w-6 h-6 items-center justify-center">
-                <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
-                  <Path
-                    d="M6 6l12 12M6 18L18 6"
-                    stroke="#ffffff"
-                    strokeWidth={2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </Svg>
-                </View>
-              </TouchableOpacity>
+              {!keyboardVisible && (
+                <TouchableOpacity 
+                  className="bg-primary p-3 rounded-full mr-2"
+                  onPress={toggleMap}
+                  accessibilityLabel="Hide map"
+                >
+                  <View className="w-6 h-6 items-center justify-center">
+                    <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
+                      <Path
+                        d="M6 6l12 12M6 18L18 6"
+                        stroke="#ffffff"
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </Svg>
+                  </View>
+                </TouchableOpacity>
+              )}
+            </View>
+          </Animated.View>
+
+          {/* Location not found popup */}
+          <Animated.View 
+            style={{
+              position: 'absolute',
+              top: 100,
+              left: 0,
+              right: 0,
+              alignItems: 'center',
+              opacity: notFoundPopupAnim,
+              transform: [
+                { 
+                  translateY: notFoundPopupAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [-20, 0],
+                  }) 
+                }
+              ],
+              zIndex: 20
+            }}
+            pointerEvents="none"
+          >
+            <View className="bg-red-500 px-6 py-3 rounded-full shadow-lg">
+              <Text className="text-white font-medium">Location not found</Text>
             </View>
           </Animated.View>
         </Animated.View>
