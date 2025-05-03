@@ -23,6 +23,7 @@ interface Bill {
   title: string;
   amount: number;
   due_date: string;
+  price: number;
   paid: boolean;
 }
 
