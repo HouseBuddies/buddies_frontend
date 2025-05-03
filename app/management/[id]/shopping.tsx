@@ -118,10 +118,10 @@ export default function ShoppingPage() {
           <Text className="text-2xl font-semibold text-gray-800">Shopping Cart</Text>
           <Pressable
             onPress={handleAddItem}
-            className="flex-row items-center bg-blue-600 px-4 py-2 rounded-xl shadow-md"
+            className="flex-row items-center bg-primary px-4 py-2 rounded-xl shadow-md"
           >
             <Icon name="plus" size={18} color="white" />
-            <Text className="text-white font-medium ml-2">Add Item</Text>
+            <Text className="text-white  font-medium ml-2">Add Item</Text>
           </Pressable>
         </View>
 
