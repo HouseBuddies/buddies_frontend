@@ -225,5 +225,5 @@ export async function getHouseMatchScore(house_id: string, token: string) {
             Authorization: `Bearer ${token}`,
         }
     });
-    return response.data["match_score"];
+    return response.data;
 }

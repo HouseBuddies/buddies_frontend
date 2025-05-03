@@ -74,6 +74,7 @@ const HouseDetails = () => {
   const [user, setUser] = useState<User | null>(null);
   const [house, setHouse] = useState<House | null>(null);
   const [matchScore, setMatchScore] = useState<number | null>(null);
+  const [matchExplanation, setMatchExplanation] = useState<string | null>(null);
   const [favourite, setFavourite] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -136,7 +137,8 @@ const HouseDetails = () => {
           setHouse(houseResponse.data);
         }
 
-        setMatchScore((matchScore * 10).toFixed(2));
+        setMatchScore((matchScore["match_score"] * 10).toFixed(2));
+        setMatchExplanation(matchScore["explanation"]);
         setIsLoading(false);
       } catch (err) {
         setError("Failed to load data");
@@ -405,16 +407,23 @@ const HouseDetails = () => {
             </TouchableOpacity>
           </View>
 
-          <View className="mt-4 flex">
-            <Text className="text-primary font-semibold text-2xl bg-primary/30 rounded-2xl p-4 flex w-min">
-              {matchScore}
-            </Text>
+          {/* Match Score*/}
+          <View className="mt-6 bg-blue-50 rounded-xl p-4">
+            <Text className="text-lg font-semibold mb-2">Match Score</Text>
+            <View className="flex-row items-center">
+              <View className="bg-primary/10 rounded-full w-16 h-16 justify-center items-center border-2 border-primary">
+                <Text className="text-primary font-bold text-xl">{matchScore}</Text>
+              </View>
+              <View className="flex-1 ml-4">
+                <Text className="text-base">{matchExplanation}</Text>
+              </View>
+            </View>
           </View>
 
           {/* Interests Section */}
           {house?.tags && house.tags.length > 0 && (
             <View className="mt-6">
-              <Text className="text-xl mb-3">Interests</Text>
+              <Text className="text-xl font-semibold mb-3">Interests</Text>
               <View className="flex-row flex-wrap gap-2">
                 {house.tags.map((interest, index) => (
                   <View
@@ -429,19 +438,19 @@ const HouseDetails = () => {
           )}
           {/* Property Features Section */}
           <View className="mt-6">
-            <Text className="text-xl mb-3">Characteristics</Text>
+            <Text className="text-xl font-semibold mb-3">Characteristics</Text>
             <View className="space-y-2">
               {[
-                "58 m² área bruta",
-                "T1",
-                "1 casa de banho",
-                "Varanda",
-                "Lugar de garagem incluído no preço",
-                "Segunda mão/bom estado",
-                "Armários embutidos",
-                "Orientação Sul",
-                "Mobilado e cozinha equipada",
-                "Aquecimento individual: Elétrico",
+                  "58 m² gross area",
+                  "T1",
+                  "1 bathroom",
+                  "Balcony",
+                  "Parking spot included in the price",
+                  "Second-hand / good condition",
+                  "Built-in wardrobes",
+                  "South facing",
+                  "Furnished and equipped kitchen",
+                  "Individual heating: Electric",
               ].map((item, index) => (
                 <View key={index} className="flex-row items-center">
                   <Text className="text-base">• {item}</Text>
@@ -451,7 +460,7 @@ const HouseDetails = () => {
           </View>
           {/* Enhanced Address Section */}
           <View className="mt-6">
-            <Text className="text-xl font-semibold">Morada</Text>
+            <Text className="text-xl font-semibold mb-3">Address</Text>
             <View
               className="rounded-lg overflow-hidden"
               style={{ height: mapHeight }}
@@ -478,24 +487,24 @@ const HouseDetails = () => {
            <View className="flex-row mt-6">
             {/* Left Column */}
             <View className="flex-1 pr-2">
-              <Text className="text-xl mb-3">Equipamento</Text>
+              <Text className="text-xl font-semibold mb-3">Equipment</Text>
               <View className="space-y-2">
                 <View className="flex-row items-center">
-                  <Text className="text-base">• Ar condicionado</Text>
+                  <Text className="text-base">• Air Conditioning</Text>
                 </View>
                 <View className="flex-row items-center">
-                  <Text className="text-base">• Máquina de lavar roupa</Text>
+                  <Text className="text-base">• Washing machine</Text>
                 </View>
               </View>
 
               <View className="mt-6">
-                <Text className="text-xl mb-3">Prédio</Text>
+                <Text className="text-xl font-semibold mb-3">Building</Text>
                 <View className="space-y-2">
                   <View className="flex-row items-center">
-                    <Text className="text-base">• 1º andar</Text>
+                    <Text className="text-base">• 1st floor</Text>
                   </View>
                   <View className="flex-row items-center">
-                    <Text className="text-base">• Com elevador</Text>
+                    <Text className="text-base">• Elevator access</Text>
                   </View>
                 </View>
               </View>
@@ -503,10 +512,10 @@ const HouseDetails = () => {
 
             {/* Right Column */}
             <View className="flex-1 pl-2">
-              <Text className="text-xl mb-3">Certificado energético</Text>
+              <Text className="text-xl mb-3 font-semibold">Energy Certificate</Text>
               <View className="space-y-2">
                 <View className="flex-row items-center">
-                  <Text className="text-base">• Classe energética: A+</Text>
+                  <Text className="text-base">• Energy class: A+</Text>
                 </View>
               </View>
             </View>
