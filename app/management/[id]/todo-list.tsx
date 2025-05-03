@@ -20,23 +20,23 @@ export default function TodoList() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('todo-list');
-  
+
   const router = useRouter();
   const params = useLocalSearchParams();
   const id = params.id;
-  
+
   // Get auth token from context
   const { token } = useAuth();
 
   // Fetch tasks when component mounts
   useEffect(() => {
     if (!id || !token) return;
-    
+
     const fetchTasks = async () => {
       try {
         setLoading(true);
         const tasksData = await getHouseTasks(id as string, token);
-        
+
         // Handle the new data structure where tasks are within a "data" property
         if (tasksData && tasksData.data && Array.isArray(tasksData.data)) {
           setTasks(tasksData.data);
@@ -47,7 +47,7 @@ export default function TodoList() {
         setLoading(false);
       }
     };
-    
+
     fetchTasks();
   }, [id, token]);
 
@@ -57,7 +57,7 @@ export default function TodoList() {
       if (!token) return;
       try {
         const response = await updateTask(taskId, !currentFinished, token);
-        if(response?.data) {
+        if (response?.data) {
           setTasks(prev =>
             prev.map(task =>
               task.id === taskId ? { ...task, finished: !currentFinished } : task
@@ -125,35 +125,35 @@ export default function TodoList() {
 
     <View className="flex-1 bg-white px-4">
       <SafeAreaView className="bg-white">
-      <TopNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+        <TopNavigation activeTab={activeTab} onTabChange={handleTabChange} />
 
-      {/* Header with title and Add button */}
-      <View className="p-4 bg-white flex-row items-center justify-between">
-        <Text className="text-lg text-gray-700 font-medium">ToDo List</Text>
-        <TouchableOpacity
-          onPress={navigateToAdd}
-          className="flex-row items-center justify-center bg-primary rounded-lg h-10 px-4"
-        >
-          <Text className="text-white text-lg font-bold">＋ Add Task</Text>
-        </TouchableOpacity>
-      </View>
-
-      {loading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#4F46E5" />
+        {/* Header with title and Add button */}
+        <View className="p-4 bg-white flex-row items-center justify-between">
+          <Text className="text-lg text-gray-700 font-medium">ToDo List</Text>
+          <TouchableOpacity
+            onPress={navigateToAdd}
+            className="flex-row items-center justify-center bg-primary rounded-lg h-10 px-4"
+          >
+            <Text className="text-white text-lg font-bold">＋ Add Task</Text>
+          </TouchableOpacity>
         </View>
-      ) : (
-        <FlatList
+
+        {loading ? (
+          <View className="flex-1 items-center justify-center">
+            <ActivityIndicator size="large" color="#4F46E5" />
+          </View>
+        ) : (
+          <FlatList
           data={tasks}
           keyExtractor={item => item.id}
           renderItem={renderItem}
-          contentContainerStyle={{ paddingVertical: 0, flexGrow: 1 }}
+          contentContainerStyle={{ paddingVertical: 0, paddingBottom: 80, flexGrow: 1 }}
           ListEmptyComponent={renderEmptyList}
-        />
-      )}
-      
-      <BottomNavigation />
-      </SafeAreaView> 
+          />
+        )}
+
+        <BottomNavigation activeTab='home' />
+      </SafeAreaView>
     </View>
 
   );

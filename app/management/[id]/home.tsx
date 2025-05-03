@@ -267,7 +267,7 @@ export default function Home() {
                     </View>
                 </ScrollView>
             </View>
-            <BottomNavigation />
+            <BottomNavigation activeTab='home' />
         </SafeAreaView>
     );
 }

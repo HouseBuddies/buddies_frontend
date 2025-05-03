@@ -163,7 +163,7 @@ export default function Management() {
         </ScrollView>
       </SafeAreaView>
       <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}>
-        <BottomNavigation />
+        <BottomNavigation activeTab='home' />
       </View>
     </View>
   );

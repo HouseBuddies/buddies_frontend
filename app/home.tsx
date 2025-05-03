@@ -779,7 +779,7 @@ const HomeScreen = () => {
             ]
           }}
         >
-          <BottomNavigation />
+          <BottomNavigation activeTab='search' />
         </Animated.View>
       </SafeAreaView>
     </KeyboardAvoidingView>

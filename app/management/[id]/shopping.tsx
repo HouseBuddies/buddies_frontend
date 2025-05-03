@@ -170,7 +170,7 @@ export default function ShoppingPage() {
         )}
       </ScrollView>
 
-      <BottomNavigation />
+      <BottomNavigation activeTab='home' />
     </SafeAreaView>
   );
 }

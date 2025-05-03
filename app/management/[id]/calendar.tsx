@@ -246,7 +246,7 @@ export default function CalendarPage() {
         )}
       </ScrollView>
 
-      <BottomNavigation />
+      <BottomNavigation activeTab='home' />
     </SafeAreaView>
   );
 }

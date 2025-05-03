@@ -256,7 +256,7 @@ const SettingsScreen = () => {
         </TouchableOpacity>
       </ScrollView>
       
-      <BottomNavigation />
+      <BottomNavigation activeTab='profile' />
       
     </SafeAreaView>
   );

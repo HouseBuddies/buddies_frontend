@@ -6,21 +6,21 @@ import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Animated,
-    Dimensions,
-    Image,
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    RefreshControl,
-    SafeAreaView,
-    StatusBar,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Animated,
+  Dimensions,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  RefreshControl,
+  SafeAreaView,
+  StatusBar,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import MapView, { Callout, Marker } from 'react-native-maps';
 import Svg, { Circle, Path } from 'react-native-svg';
@@ -629,7 +629,7 @@ const FavoritesScreen = () => {
             ]
           }}
         >
-          <BottomNavigation />
+          <BottomNavigation activeTab='favorites' />
         </Animated.View>
       </SafeAreaView>
     </KeyboardAvoidingView>

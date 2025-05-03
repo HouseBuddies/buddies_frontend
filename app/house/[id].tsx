@@ -15,7 +15,7 @@ import {
 import Constants from "expo-constants";
 import { Link, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import Svg, { Circle, Path } from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 
 import {
   ActivityIndicator,
@@ -504,7 +504,7 @@ const HouseDetails = () => {
 
         </View>
       </ScrollView>
-      <BottomNavigation />
+      <BottomNavigation activeTab='home' />
     </SafeAreaView>
   );
 };

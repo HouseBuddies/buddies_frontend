@@ -5,8 +5,7 @@ import { useAuth } from '@/context/AuthContext'; // You'll need to create/import
 import { getHouseBills } from '@/data/houses'; // Adjust the import based on your project structure
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 // Sample user data
 const INITIAL_USERS = [
@@ -656,7 +655,7 @@ const BillSplitterScreen = () => {
                 onSave={addNewExpense}
                 users={users}
             />
-            <BottomNavigation />
+            <BottomNavigation activeTab='home' />
         </View>
     );
 };
