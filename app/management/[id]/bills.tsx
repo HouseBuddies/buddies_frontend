@@ -6,6 +6,7 @@ import { getHouseBills } from '@/data/houses'; // Adjust the import based on you
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Sample user data
 const INITIAL_USERS = [
@@ -24,7 +25,7 @@ const formatCurrency = (amount) => {
 // Avatar component for users
 const UserAvatar = ({ user, size = 'md', isSelected, onPress }) => {
     const sizeClass = size === 'sm' ? 'w-6 h-6 text-xs' : 'w-10 h-10 text-sm';
-    const borderClass = isSelected ? 'border-2 border-blue-500' : '';
+    const borderClass = isSelected ? 'border-2 border-primary' : '';
 
     return (
         <TouchableOpacity
@@ -45,7 +46,7 @@ const ExpenseItem = ({ expense, users, onPress }) => {
 
     return (
         <TouchableOpacity
-            className="bg-white p-4 rounded-lg mb-3 shadow-sm border border-gray-100"
+            className="bg-white p-4 rounded-lg mb-3  border border-gray-100"
             onPress={onPress}
         >
             <View className="flex-row justify-between items-center mb-2">
@@ -70,7 +71,7 @@ const ExpenseItem = ({ expense, users, onPress }) => {
                             ? 'Split custom amounts'
                             : `Split equally between ${splitCount} people`}
                     </Text>
-                    <View className="flex-row">
+                    <View className="flex-row bg-white">
                         {users.slice(0, 3).map(user => (
                             <View
                                 key={user.id}
@@ -81,7 +82,7 @@ const ExpenseItem = ({ expense, users, onPress }) => {
                             </View>
                         ))}
                         {users.length > 3 && (
-                            <View className="ml-1 w-6 h-6 rounded-full bg-gray-200 items-center justify-center">
+                            <View className="ml-1 w-6 h-6 rounded-full bg-white items-center justify-center">
                                 <Text className="text-xs text-gray-600">+{users.length - 3}</Text>
                             </View>
                         )}
@@ -192,17 +193,17 @@ const NewExpenseModal = ({ visible, onClose, onSave, users }) => {
             transparent={true}
             animationType="slide"
         >
-            <View className="flex-1 justify-end bg-black bg-opacity-50">
+            <View className="flex-1 justify-end bg-white">
                 <KeyboardAvoidingView
                     behavior={Platform.OS === "ios" ? "padding" : "height"}
                     className="bg-white rounded-t-xl w-full"
                     keyboardVerticalOffset={100}
                 >
-                    <ScrollView className="p-5 max-h-[80%]">
+                    <ScrollView className="px-5 max-h-[80%]">
                         <View className="flex-row justify-between items-center mb-6">
                             <Text className="text-xl font-bold">New Expense</Text>
                             <TouchableOpacity onPress={onClose}>
-                                <Text className="text-blue-500 text-lg">Cancel</Text>
+                                <Text className="text-primary text-lg">Cancel</Text>
                             </TouchableOpacity>
                         </View>
 
@@ -283,7 +284,7 @@ const NewExpenseModal = ({ visible, onClose, onSave, users }) => {
                             <View className="mb-4">
                                 <View className="flex-row justify-between mb-2">
                                     <Text className="font-medium">Custom Split</Text>
-                                    <Text className={`${remainingAmount < 0 ? 'text-red-500' : 'text-blue-500'}`}>
+                                    <Text className={`${remainingAmount < 0 ? 'text-red-500' : 'text-primary'}`}>
                                         {remainingAmount > 0 ? `${formatCurrency(remainingAmount)} left` :
                                             remainingAmount < 0 ? `${formatCurrency(Math.abs(remainingAmount))} over` :
                                                 'Perfect split!'}
@@ -299,7 +300,7 @@ const NewExpenseModal = ({ visible, onClose, onSave, users }) => {
                                                 <Text className="ml-2">{user.name}</Text>
                                             </View>
                                             <TextInput
-                                                className="border border-gray-300 rounded-lg p-2 w-24 text-right"
+                                                className=" rounded-lg p-2 w-24 text-right"
                                                 placeholder="0.00"
                                                 keyboardType="decimal-pad"
                                                 value={customAmounts[userId] || ''}
@@ -312,7 +313,7 @@ const NewExpenseModal = ({ visible, onClose, onSave, users }) => {
                         )}
 
                         <TouchableOpacity
-                            className="bg-blue-500 py-3 rounded-lg items-center mt-4 mb-6"
+                            className="bg-primary py-3 rounded-lg items-center mt-4 mb-6"
                             onPress={handleSave}
                         >
                             <Text className="text-white font-semibold text-lg">Save Expense</Text>
@@ -343,7 +344,7 @@ const SettlementView = ({ users, settlements }) => {
                 return (
                     <View
                         key={index}
-                        className="bg-white p-4 rounded-lg mb-3 shadow-sm border border-gray-100"
+                        className="bg-white p-4 rounded-lg mb-3  border border-gray-100"
                     >
                         <View className="flex-row items-center justify-between">
                             <View className="flex-row items-center">
@@ -368,7 +369,7 @@ const UserSummaryCard = ({ user, totalPaid, totalOwes, netBalance }) => {
     const isPositive = netBalance >= 0;
 
     return (
-        <View className="bg-white p-3 rounded-lg mr-3 shadow-sm border border-gray-100 w-36">
+        <View className="bg-white p-3 rounded-lg mr-3  border border-gray-100 w-36">
             <View className="flex-row items-center mb-2">
                 <UserAvatar user={user} size="sm" />
                 <Text className="ml-2 font-semibold">{user.name}</Text>
@@ -564,8 +565,9 @@ const BillSplitterScreen = () => {
 
     return (
         <View className="flex-1">
+            <SafeAreaView className="bg-white">
             <TopNavigation activeTab={activeTab2} onTabChange={route => handleTabChange(route)} />
-            <View className="bg-white pt-12 pb-4 px-4 shadow-sm">
+            <View className="bg-white pt-12 px-4">
                 <Text className="text-2xl font-bold mb-4">Split Bills</Text>
 
                 {/* User summaries */}
@@ -584,39 +586,40 @@ const BillSplitterScreen = () => {
                 )}
 
                 {/* Tab navigation */}
-                <View className="flex-row border-b border-gray-200">
+                <View className="flex-row justify-around ">
                     <TouchableOpacity
-                        className={`py-2 px-4 ${activeTab === 'expenses' ? 'border-b-2 border-blue-500' : ''}`}
+                        className={`py-2 px-4 ${activeTab === 'expenses' ? 'border-b-2 border-primary' : ''}`}
                         onPress={() => setActiveTab('expenses')}
                     >
                         <Text
-                            className={`font-medium ${activeTab === 'expenses' ? 'text-blue-500' : 'text-gray-600'}`}
+                            className={`font-medium ${activeTab === 'expenses' ? 'text-primary' : 'text-gray-600'}`}
                         >
                             Expenses
                         </Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        className={`py-2 px-4 ${activeTab === 'settle' ? 'border-b-2 border-blue-500' : ''}`}
+                        className={`py-2 px-4 ${activeTab === 'settle' ? 'border-b-2 border-primary' : ''}`}
                         onPress={() => setActiveTab('settle')}
                     >
                         <Text
-                            className={`font-medium ${activeTab === 'settle' ? 'text-blue-500' : 'text-gray-600'}`}
+                            className={`font-medium ${activeTab === 'settle' ? 'text-primary' : 'text-gray-600'}`}
                         >
                             Settle Up
                         </Text>
                     </TouchableOpacity>
                 </View>
             </View>
+            </SafeAreaView>
 
-            <ScrollView className="flex-1 p-4">
+            <ScrollView className="flex-1 px-4 bg-white">
                 {isLoading ? (
-                    <View className="flex-1 justify-center items-center py-10">
+                    <View className="flex-1 justify-center items-center py-10 ">
                         <ActivityIndicator size="large" color="#3b82f6" />
                         <Text className="mt-4 text-gray-600">Loading expenses...</Text>
                     </View>
                 ) : activeTab === 'expenses' ? (
-                    expenses.length > 0 ? (
+                        expenses.length > 0 ? (
                         expenses.map(expense => (
                             <ExpenseItem
                                 key={expense.id}
@@ -640,7 +643,7 @@ const BillSplitterScreen = () => {
 
             {/* FAB for adding new expense */}
             <TouchableOpacity
-                className="absolute bottom-6 right-6 bg-blue-500 rounded-full w-14 h-14 items-center justify-center shadow-lg"
+                className="absolute bottom-6 right-6 bg-primary rounded-full w-14 h-14 items-center justify-center shadow-lg"
                 onPress={() => setNewExpenseModalVisible(true)}
             >
                 <Text className="text-white text-3xl font-light">+</Text>

@@ -25,68 +25,76 @@ const iconPaths = {
   }
 };
 
-const NavItem = ({ 
-  title, 
-  isActive, 
-  onPress, 
-  iconType 
-}: { 
-  title: string; 
-  isActive: boolean; 
+const NavItem = ({
+  title,
+  isActive,
+  onPress,
+  iconType
+}: {
+  title: string;
+  isActive: boolean;
   onPress: () => void;
   iconType: keyof typeof iconPaths;
 }) => {
-    const iconPath = iconPaths[iconType];
-    
-    return (
-        <TouchableOpacity
-            className={`items-center px-4 ${isActive ? 'border-b-2 border-blue-500' : 'opacity-70'}`}
-            onPress={onPress}
-            accessibilityLabel={title}
+  const iconPath = iconPaths[iconType];
+  
+  return (
+    <TouchableOpacity
+      className={`items-center px-4 mb-2`}
+      onPress={onPress}
+      accessibilityLabel={title}
+    >
+      <View className="items-center">
+        <Svg
+          width={24}
+          height={24}
+          viewBox={iconPath.viewBox}
+          fill="none"
+          stroke={isActive ? '#3B82F6' : '#6B7280'}
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
         >
-            <View className="items-center">
-                <Svg
-                    width={24}
-                    height={24}
-                    viewBox={iconPath.viewBox}
-                    fill="none"
-                    stroke={isActive ? '#3B82F6' : '#6B7280'}
-                    strokeWidth={2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                >
-                    <Path d={iconPath.d} />
-                </Svg>
-            </View>
-            <Text className={`text-xs mt-1 ${isActive ? 'text-blue-500' : 'text-gray-500'}`}>{title}</Text>
-        </TouchableOpacity>
-    );
+          <Path d={iconPath.d} />
+        </Svg>
+      </View>
+      <Text className={`text-sm ${isActive ? 'text-primary' : 'text-gray-500'}`}>
+        {title}
+      </Text>
+    </TouchableOpacity>
+  );
 };
 
-const TopNavigation = ({ activeTab, onTabChange }: { activeTab: string; onTabChange: (id: string) => void }) => {
-    const tabs = [
-        { id: 'home', title: 'Home', route: '/management/1/home', iconType: 'home' as const },
-        { id: 'todo-list', title: 'To Do', route: '/management/1/todo-list', iconType: 'todo' as const },
-        { id: 'bills', title: 'Bills', route: '/management/1/bills', iconType: 'bills' as const },
-        { id: 'shopping', title: 'Shopping List', route: '/management/1/shopping-list', iconType: 'shopping' as const },
-        { id: 'calendar', title: 'Calendar', route: '/management/1/calendar', iconType: 'calendar' as const },
-    ];
+const TopNavigation = ({ 
+  activeTab, 
+  onTabChange 
+}: { 
+  activeTab: string; 
+  onTabChange: (id: string) => void 
+}) => {
+  const tabs = [
+    { id: 'home', title: 'Home', route: '/management/1/home', iconType: 'home' as const },
+    { id: 'todo-list', title: 'To Do', route: '/management/1/todo-list', iconType: 'todo' as const },
+    { id: 'bills', title: 'Bills', route: '/management/1/bills', iconType: 'bills' as const },
+    { id: 'shopping', title: 'Shopping List', route: '/management/1/shopping-list', iconType: 'shopping' as const },
+    { id: 'calendar', title: 'Calendar', route: '/management/1/calendar', iconType: 'calendar' as const },
+  ];
 
-    console.log("activeTab", activeTab);
-
-    return (
-        <View className="w-full flex-row justify-between items-center px-2 pt-1 pb-2 bg-white">
-            {tabs.map((tab) => (
-                <NavItem
-                    key={tab.id}
-                    title={tab.title}
-                    isActive={activeTab === tab.id}
-                    onPress={() => onTabChange(tab.id)}
-                    iconType={tab.iconType}
-                />
-            ))}
-        </View>
-    );
+  console.log("activeTab", activeTab);
+  
+  return (
+    <View className="w-full flex-row justify-between items-center px-2 pt-1 pb-2 bg-white">
+      {tabs.map((tab) => (
+        <NavItem
+          key={tab.id}
+          title={tab.title}
+          isActive={activeTab === tab.id}
+          onPress={() => onTabChange(tab.id)}
+          iconType={tab.iconType}
+        />
+      ))}
+    </View>
+  );
 };
 
 export default TopNavigation;

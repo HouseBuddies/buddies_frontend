@@ -6,21 +6,21 @@ import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Animated,
-  Dimensions,
-  Image,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  RefreshControl,
-  SafeAreaView,
-  StatusBar,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    Animated,
+    Dimensions,
+    Image,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    RefreshControl,
+    SafeAreaView,
+    StatusBar,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import MapView, { Callout, Marker } from 'react-native-maps';
 import Svg, { Circle, Path } from 'react-native-svg';
@@ -436,7 +436,7 @@ const FavoritesScreen = () => {
       <SafeAreaView className="flex-1 bg-gray-50 justify-center items-center p-4">
         <Text className="text-red-500 text-lg mb-4">{error}</Text>
         <TouchableOpacity 
-          className="bg-blue-500 px-4 py-2 rounded-lg"
+          className="bg-primary px-4 py-2 rounded-lg"
           onPress={() => loadData()}
         >
           <Text className="text-white">Retry</Text>
@@ -503,7 +503,7 @@ const FavoritesScreen = () => {
                     <View className="bg-white p-2 rounded-md min-w-40">
                       <Text className="font-bold">{formatAddress(house.address)}</Text>
                       <Text className="text-sm">{house.min_rent} € - {house.max_rent} €</Text>
-                      <Text className="text-xs text-blue-500 mt-1">Tap to view details</Text>
+                      <Text className="text-xs text-primary mt-1">Tap to view details</Text>
                     </View>
                   </Callout>
                 </Marker>

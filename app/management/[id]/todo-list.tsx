@@ -5,7 +5,7 @@ import { getHouseTasks, updateTask } from '@/data/houses'; // Import the task fe
 import Checkbox from 'expo-checkbox';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 
 // Define Task interface based on the API response structure
 interface Task {
@@ -81,7 +81,7 @@ export default function TodoList() {
 
   const renderItem = ({ item }: { item: Task }) => (
     <TouchableOpacity
-      className="flex-row items-center justify-between p-4 border-b border-gray-200 bg-white"
+      className="flex-row items-center justify-between p-4 border rounded-2xl mt-2 border-gray-200 bg-white"
       activeOpacity={0.7}
       onPress={() => toggleTask(item.id, item.finished)}
     >
@@ -89,7 +89,7 @@ export default function TodoList() {
         <Checkbox
           value={item.finished}
           onValueChange={() => toggleTask(item.id, item.finished)}
-          color={item.finished ? '#4F46E5' : undefined}
+          color={item.finished ? '#3B82F6' : undefined}
         />
         <View className="ml-3 flex-1">
           <Text className={`${item.finished ? 'line-through text-gray-400' : 'text-black'} text-lg`}>
@@ -113,7 +113,7 @@ export default function TodoList() {
       <Text className="text-gray-500 text-lg">No tasks found</Text>
       <TouchableOpacity
         onPress={navigateToAdd}
-        className="mt-4 bg-indigo-600 rounded-lg py-2 px-4"
+        className="mt-4 bg-primary rounded-lg py-2 px-4"
       >
         <Text className="text-white font-medium">Add Task</Text>
       </TouchableOpacity>
@@ -121,15 +121,18 @@ export default function TodoList() {
   );
 
   return (
-    <View className="flex-1 bg-gray-100">
+
+
+    <View className="flex-1 bg-white px-4">
+      <SafeAreaView className="bg-white">
       <TopNavigation activeTab={activeTab} onTabChange={handleTabChange} />
 
       {/* Header with title and Add button */}
-      <View className="p-4 border-b border-gray-200 bg-white flex-row items-center justify-between">
+      <View className="p-4 bg-white flex-row items-center justify-between">
         <Text className="text-lg text-gray-700 font-medium">ToDo List</Text>
         <TouchableOpacity
           onPress={navigateToAdd}
-          className="flex-row items-center justify-center bg-indigo-600 rounded-lg h-10 px-4"
+          className="flex-row items-center justify-center bg-primary rounded-lg h-10 px-4"
         >
           <Text className="text-white text-lg font-bold">＋ Add Task</Text>
         </TouchableOpacity>
@@ -148,7 +151,10 @@ export default function TodoList() {
           ListEmptyComponent={renderEmptyList}
         />
       )}
+      
       <BottomNavigation />
+      </SafeAreaView> 
     </View>
+
   );
 }

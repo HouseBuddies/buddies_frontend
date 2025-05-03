@@ -167,7 +167,7 @@ const SettingsScreen = () => {
           <Feather name="alert-circle" size={40} color="#ef4444" />
           <Text className="text-red-500 mt-2">{error}</Text>
           <TouchableOpacity 
-            className="mt-3 px-4 py-2 bg-blue-500 rounded-lg"
+            className="mt-3 px-4 py-2 bg-primary rounded-lg"
             onPress={() => {
               setError(null);
               setLoading(true);
@@ -205,7 +205,7 @@ const SettingsScreen = () => {
             </View>
           )}
           <TouchableOpacity 
-            className="absolute bottom-0 right-0 bg-blue-500 rounded-full p-2"
+            className="absolute bottom-0 right-0 bg-primary rounded-full p-2"
             onPress={() => console.log('Edit profile')}
           >
             <Feather name="edit-2" size={16} color="white" />

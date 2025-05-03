@@ -556,7 +556,7 @@ const HomeScreen = () => {
       <SafeAreaView className="flex-1 bg-gray-50 justify-center items-center p-4">
         <Text className="text-red-500 text-lg mb-4">{error}</Text>
         <TouchableOpacity 
-          className="bg-blue-500 px-4 py-2 rounded-lg"
+          className="bg-primary px-4 py-2 rounded-lg"
           onPress={() => loadData()}
         >
           <Text className="text-white">Retry</Text>
@@ -619,7 +619,7 @@ const HomeScreen = () => {
                       <Text className="font-bold">{formatAddress(house.address)}</Text>
                       <Text className="text-sm">{house.min_rent} € - {house.max_rent} €</Text>
                       <Text className="text-xs text-gray-600">Owned by {house.owner.name}</Text>
-                      <Text className="text-xs text-blue-500 mt-1">Tap to view details</Text>
+                      <Text className="text-xs text-primary mt-1">Tap to view details</Text>
                     </View>
                   </Callout>
                 </Marker>
