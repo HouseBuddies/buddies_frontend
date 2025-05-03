@@ -28,7 +28,7 @@ export default function DemographicsScreen({ navigation, route }) {
         <View className="mb-8">
           <Text className="text-lg font-semibold text-primary mb-2">Age</Text>
           <TextInput
-            className="border border-gray-300 rounded-lg pt-2 pb-4 px-4 text-lg"
+            className="border border-gray-300 rounded-lg py-4 pt-2 px-4 text-lg"
             keyboardType="numeric"
             value={age.toString()}
             onChangeText={(text) => {
