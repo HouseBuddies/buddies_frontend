@@ -97,7 +97,7 @@ export default function Management() {
           {house.tags && house.tags.length > 0 && (
             <View className="flex-row flex-wrap">
               {house.tags.map(tag => (
-                <Text key={tag} className="text-xs text-indigo-600 mr-2 mb-1">#{tag}</Text>
+                <Text key={tag} className="text-xs text-blue-300 mr-2 mb-1">#{tag}</Text>
               ))}
             </View>
           )}

@@ -29,9 +29,9 @@ interface Bill {
 
 const ToDoItem = ({ task, onToggle }: { task: Task; onToggle: (id: string, value: boolean) => void }) => {
     return (
-        <TouchableOpacity className="flex-row items-center mb-2" onPress={() => onToggle(task.id, !task.finished)} activeOpacity={0.7}>
-            <View className="h-8 w-8 rounded-full bg-purple-100 items-center justify-center mr-3">
-                <Text className="text-purple-800 font-semibold">{task.letter || task.title.charAt(0).toUpperCase()}</Text>
+        <TouchableOpacity className="flex-row items-center mb-2 border-2 border-gray-100 py-2 px-4 rounded-lg" onPress={() => onToggle(task.id, !task.finished)} activeOpacity={0.7}>
+            <View className="h-8 w-8 rounded-full bg-primary/10 items-center justify-center mr-3">
+                <Text className="text-primary font-semibold">{task.letter || task.title.charAt(0).toUpperCase()}</Text>
             </View>
             <View className="flex-1">
                 <Text className={`${task.finished ? 'line-through text-gray-400' : ''}`}>{task.title}</Text>
@@ -45,20 +45,20 @@ const ToDoItem = ({ task, onToggle }: { task: Task; onToggle: (id: string, value
             <Checkbox
                 value={task.finished}
                 onValueChange={(value) => onToggle(task.id, value)}
-                color={task.finished ? '#4630EB' : undefined}
+                color={task.finished ? '#3B82F6' : undefined}
             />
         </TouchableOpacity>
     );
 };
 
 const PaymentItem = ({ bill, onPress }: { bill: Bill; onPress: () => void }) => (
-    <TouchableOpacity className="flex-row items-center justify-between py-3" onPress={onPress}>
+    <TouchableOpacity className="flex-row items-center justify-between mb-2 py-2 border-2 border-gray-100 px-4 rounded-lg" onPress={onPress}>
         <View className="flex-1">
             <Text className={`${bill.paid ? 'text-gray-400' : 'text-gray-800'}`}>{bill.description}</Text>
             <Text className="text-sm text-gray-500">Due: {new Date(bill.due_date).toLocaleDateString()}</Text>
         </View>
         <View className="flex-row items-center">
-            <Text className={`mr-2 font-medium ${bill.paid ? 'text-gray-400' : 'text-indigo-600'}`}>
+            <Text className={`mr-2 font-medium ${bill.paid ? 'text-gray-400' : 'text-3B82F6'}`}>
                 €{bill.price}
             </Text>
         </View>
@@ -260,7 +260,7 @@ export default function Home() {
                                 <Text className="text-xs text-gray-600">Paid Bills</Text>
                             </View>
                             <View className="flex-row items-center">
-                                <View className="w-3 h-3 rounded-full bg-blue-500 mr-1" />
+                                <View className="w-3 h-3 rounded-full bg-primary mr-1" />
                                 <Text className="text-xs text-gray-600">Tasks</Text>
                             </View>
                         </View>

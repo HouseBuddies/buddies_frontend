@@ -17,7 +17,7 @@ const BottomNavigation = () => {
           router.replace("/management");
           break;
         case "favorites":
-          router.replace("/");
+          router.replace("/favorites");
           break;
         case "messages":
           router.replace("/");

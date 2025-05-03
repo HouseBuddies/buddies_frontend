@@ -114,17 +114,17 @@ export default function CalendarPage() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1 bg-white">
       <TopNavigation activeTab={activeTab} onTabChange={handleTabChange} />
 
       <ScrollView className="flex-1 px-6 pt-4">
         {/* Calendar Section */}
-        <View className="bg-white rounded-2xl shadow p-4 mb-6">
+        <View className="bg-white py-4 mb-6">
           <View className="flex-row justify-between items-center mb-2">
             <Text className="text-xl font-semibold text-gray-800">Calendar</Text>
             <Pressable
               onPress={handleAddActivity}
-              className="flex-row items-center bg-blue-600 px-3 py-1 rounded-lg"
+              className="flex-row items-center bg-primary px-3 py-1 rounded-lg"
             >
               <Icon
                 name={Platform.OS === 'ios' ? 'plus-circle' : 'plus'}
@@ -162,7 +162,7 @@ export default function CalendarPage() {
               <Text className="text-xs text-gray-600">Paid Bills</Text>
             </View>
             <View className="flex-row items-center">
-              <View className="w-3 h-3 rounded-full bg-blue-500 mr-1" />
+              <View className="w-3 h-3 rounded-full bg-primary mr-1" />
               <Text className="text-xs text-gray-600">Tasks</Text>
             </View>
             <View className="flex-row items-center">
@@ -173,27 +173,27 @@ export default function CalendarPage() {
         </View>
 
         {/* Toggle Tasks / Activities */}
-        <View className="flex-row justify-around mb-4 border-b border-gray-300">
+        <View className="flex-row justify-around mb-4">
           <Pressable
             onPress={() => setViewType('tasks')}
-            className={`px-4 py-2 ${viewType === 'tasks' ? 'border-b-2 border-blue-600' : ''}`}
+            className={`px-4 py-2 ${viewType === 'tasks' ? 'border-b-2 primary' : ''}`}
           >
-            <Text className={`font-medium ${viewType === 'tasks' ? 'text-blue-600' : 'text-gray-700'}`}>
+            <Text className={`font-medium ${viewType === 'tasks' ? 'text-primary' : 'text-gray-700'}`}>
               Tasks
             </Text>
           </Pressable>
           <Pressable
             onPress={() => setViewType('activities')}
-            className={`px-4 py-2 ${viewType === 'activities' ? 'border-b-2 border-blue-600' : ''}`}
+            className={`px-4 py-2 ${viewType === 'activities' ? 'border-b-2 primary' : ''}`}
           >
-            <Text className={`font-medium ${viewType === 'activities' ? 'text-blue-600' : 'text-gray-700'}`}>
+            <Text className={`font-medium ${viewType === 'activities' ? 'text-primary' : 'text-gray-700'}`}>
               Activities
             </Text>
           </Pressable>
         </View>
 
         {viewType === 'tasks' ? (
-          <View className="bg-white rounded-2xl shadow p-4 mb-6">
+          <View className="bg-white rounded-2xl border-2 border-gray-100 p-4 mb-6">
             <Text className="text-xl font-semibold text-gray-800 mb-3">Upcoming Tasks</Text>
             {tasks.length === 0 ? (
               <Text className="text-gray-500">No upcoming tasks</Text>
@@ -219,7 +219,7 @@ export default function CalendarPage() {
             )}
           </View>
         ) : (
-          <View className="bg-white rounded-2xl shadow p-4 mb-6">
+          <View className="bg-white rounded-2xl border-2 border-gray-100 p-4 mb-6">
             <Text className="text-xl font-semibold text-gray-800 mb-3">Upcoming Activities</Text>
             {activities.length === 0 ? (
               <Text className="text-gray-500">No upcoming activities</Text>

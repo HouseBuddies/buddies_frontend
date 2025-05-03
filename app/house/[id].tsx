@@ -304,7 +304,7 @@ const HouseDetails = () => {
     return (
       <SafeAreaView className="flex-1 bg-white justify-center items-center p-4">
         <Text className="text-red-500 text-lg">{error}</Text>
-        <TouchableOpacity className="mt-4 bg-blue-500 px-4 py-2 rounded-lg">
+        <TouchableOpacity className="mt-4 bg-primary px-4 py-2 rounded-lg">
           <Link href="/home" className="text-white">
             Go Back
           </Link>
@@ -379,7 +379,7 @@ const HouseDetails = () => {
               onPress={handleApplyToJoin}
               disabled={isApplying}
               className={`${
-                hasApplied ? "bg-red-500" : "bg-blue-500"
+                hasApplied ? "bg-red-500" : "bg-primary"
               } py-2 px-4 rounded-lg ${isApplying ? "opacity-70" : ""}`}
               accessibilityLabel={
                 hasApplied ? "Cancel application" : "Apply to join this house"
