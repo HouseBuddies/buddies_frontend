@@ -147,3 +147,14 @@ export async function updateTask(task_id: string, finished: boolean, token: stri
     console.log("Update task", response.data);
     return response.data;
 }
+
+export async function listRankedHouses(token : string, location : string) {
+    const response = await API.get('/houses/ranked', {
+        params: {"location": location},
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+    return response.data;
+}
