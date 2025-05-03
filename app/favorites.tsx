@@ -289,7 +289,6 @@ const FavoritesScreen = () => {
       if (response?.data) {
         // pull out just the house objects
         const housesOnly = response.data.map((fav: { house: any, user: any }) => fav.house);
-        console.log('Fetched houses:', housesOnly);
   
         const sliced = housesOnly.slice(0, 40);
         const withRandoms = sliced.map((house: any) => ({
@@ -435,10 +434,6 @@ const FavoritesScreen = () => {
       </SafeAreaView>
     );
   }
-
-  console.log('Houses:', houses);
-    console.log('Favorites:', favorites);
-    console.log('User:', user);
 
   if (error) {
     return (

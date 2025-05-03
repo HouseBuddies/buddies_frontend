@@ -79,8 +79,6 @@ const TopNavigation = ({
     { id: 'shopping', title: 'Shopping List', route: '/management/1/shopping-list', iconType: 'shopping' as const },
     { id: 'calendar', title: 'Calendar', route: '/management/1/calendar', iconType: 'calendar' as const },
   ];
-
-  console.log("activeTab", activeTab);
   
   return (
     <View className="w-full flex-row justify-between items-center px-2 pt-1 pb-2 bg-white">

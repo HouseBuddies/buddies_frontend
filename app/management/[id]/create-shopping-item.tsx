@@ -56,8 +56,6 @@ export default function CreateProduct() {
     return valid
   }
 
-  console.log("Token", token)
-
   const fetchUserData = useCallback(async () => {
     if (!token) return;
 

@@ -19,7 +19,7 @@ const tabs: TabConfig[] = [
         <Rect x={14} y={14} width={7} height={7} />
         <Rect x={3} y={14} width={7} height={7} />
       </Svg>
-    ), label: 'Home',
+    ), label: 'Manager',
   },
   {
     name: 'favorites', route: '/favorites', Icon: ({ color }) => (

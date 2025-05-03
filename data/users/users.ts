@@ -9,6 +9,5 @@ export async function updateUserPreferences(token : string, preferences : any) {
             Authorization: `Bearer ${token}`,
         },
     });
-    console.log("Update preferences response:", response.data);
     return response.data;
 }
