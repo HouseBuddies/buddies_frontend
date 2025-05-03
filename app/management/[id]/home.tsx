@@ -145,8 +145,6 @@ export default function Home() {
         
         fetchData();
     }, [id, token]);
-    console.log('Tasks:', tasks);
-    console.log('Bills:', bills);
     
     // Handle task toggle
     const handleTaskToggle = (taskId: string, currentFinished: boolean) => {

@@ -41,7 +41,6 @@ export default function SummaryScreen({ navigation, route }) {
       return acc;
     }, {});
 
-    console.log(data)
   
     await updateUserPreferences(token || "", data);
   }

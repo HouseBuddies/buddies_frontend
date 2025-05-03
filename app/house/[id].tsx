@@ -170,8 +170,6 @@ const HouseDetails = () => {
     checkFavorite();
   }, [user, house, token]);
 
-  console.log(favourite)
-
   const toggleFavorite = useCallback(async () => {
     if (!house?.id || !token || !user?.id) {
       Alert.alert("Error", "Unable to update favorites");
@@ -193,8 +191,6 @@ const HouseDetails = () => {
       Alert.alert("Error", "An error occurred while updating favorites");
     }
   }, [favourite, house, user, token]);
-
-  console.log("House Details:", house);
 
   const handleApplyToJoin = useCallback(async () => {
     if (!house?.id || !token || !user?.id) {
@@ -320,8 +316,6 @@ const HouseDetails = () => {
       </SafeAreaView>
     );
   }
-
-  console.log("Has applied:", hasApplied);
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -524,7 +518,7 @@ const HouseDetails = () => {
 
         </View>
       </ScrollView>
-      <BottomNavigation activeTab='home' />
+      <BottomNavigation activeTab='search' />
     </SafeAreaView>
   );
 };

@@ -19,7 +19,6 @@ export async function showHouse(id: string, token: string) {
 }
 
 export async function addFavoriteHouse(house_id: string, user_id: string, token: string) {
-    console.log("Adding favorite house", house_id, user_id, token);
     const response = await API.post(`/houses/${house_id}/favorite`, {
         user_id,
         house_id
@@ -41,7 +40,6 @@ export async function removeFavoriteHouse(house_id: string, user_id: string, tok
             Authorization: `Bearer ${token}`,
         }
     });
-    console.log(response.data);
     return response.data;
 }
 
@@ -51,7 +49,6 @@ export async function getUserFavoriteHouses(user_id: string, token: string) {
             Authorization: `Bearer ${token}`,
         }
     })
-    console.log("User favorite houses", response.data);
     return response.data;
 }
 
@@ -102,7 +99,6 @@ export async function getUserHouses(user_id: string, token: string) {
             Authorization: `Bearer ${token}`,
         }
     });
-    console.log("User houses", response.data);
     return response.data;
 }
 
@@ -112,7 +108,6 @@ export async function getHouseTasks(house_id: string, token: string) {
             Authorization: `Bearer ${token}`,
         }
     });
-    console.log("House tasks", response.data);
     return response.data;
 }
 
@@ -122,7 +117,6 @@ export async function getHouseBills(house_id: string, token: string) {
             Authorization: `Bearer ${token}`,
         }
     });
-    console.log("House bills", response.data);
     return response.data;
 }
 
@@ -132,7 +126,6 @@ export async function getHouseActivities(house_id: string, token: string) {
             Authorization: `Bearer ${token}`,
         }
     });
-    console.log("House activities", response.data);
     return response.data;
 }
 
@@ -144,7 +137,6 @@ export async function updateTask(task_id: string, finished: boolean, token: stri
             Authorization: `Bearer ${token}`,
         }
     });
-    console.log("Update task", response.data);
     return response.data;
 }
 
