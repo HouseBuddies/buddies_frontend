@@ -47,6 +47,7 @@ interface House {
   owner: {
     id: string;
     name: string;
+    photo: string;
   };
   image: string;
   randomHouseId?: number;
@@ -731,9 +732,7 @@ const HomeScreen = () => {
             }
             keyboardShouldPersistTaps="handled"
           >
-            {houses.map((house, index) => {
-              const ownerPhoto = `https://randomuser.me/api/portraits/men/${house.randomUserId || 1}.jpg`;
-              
+            {houses.map((house, index) => {              
               return (
                 <PropertyCard
                   key={house.id || index}
@@ -744,7 +743,7 @@ const HomeScreen = () => {
                   ownerName={house.owner.name}
                   randomUserId={house.randomUserId || 1}
                   image={house.image}
-                  ownerPhoto={ownerPhoto}
+                  ownerPhoto={house.owner.photo}
                   isFavorite={favorites.has(house.id)}
                   onToggleFavorite={toggleFavorite}
                   latitude={house.latitude}
