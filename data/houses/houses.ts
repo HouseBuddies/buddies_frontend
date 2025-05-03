@@ -158,3 +158,29 @@ export async function listRankedHouses(token : string, location : string) {
 
     return response.data;
 }
+
+export async function createHouseActivity(house_id: string, user_id: string, activity: { title: string; description: string; start_date: string; end_date: string }, token: string) {
+    const response = await API.post(`/houses/${house_id}/activities`, { 
+            activity,
+            created_by_id: user_id
+        }, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        }
+    });
+
+    return response.data;
+}
+
+export async function createHouseTask(house_id: string, user_id: string, task: { title: string; description: string; due_date: string }, token: string) {
+    const response = await API.post(`/houses/${house_id}/tasks`, { 
+            task,
+            creator_id: user_id
+        }, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        }
+    });
+
+    return response.data;
+}

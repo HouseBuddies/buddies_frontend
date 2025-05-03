@@ -2,7 +2,7 @@ import BottomNavigation from '@/components/BottomNavigation';
 import TopNavigation from '@/components/TopNavigations';
 import { useAuth } from '@/context/AuthContext';
 import { getHouseActivities, getHouseBills, getHouseTasks } from '@/data/houses';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   Platform,
@@ -44,6 +44,7 @@ interface Activity {
 export default function CalendarPage() {
   const { id } = useLocalSearchParams();
   const { token } = useAuth();
+  const router = useRouter();
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [bills, setBills] = useState<Bill[]>([]);

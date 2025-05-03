@@ -7,7 +7,6 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { Calendar } from 'react-native-calendars';
-import Svg, { Path } from 'react-native-svg';
 
 interface Task {
   id: string;
@@ -61,9 +60,6 @@ const PaymentItem = ({ bill, onPress }: { bill: Bill; onPress: () => void }) => 
             <Text className={`mr-2 font-medium ${bill.paid ? 'text-gray-400' : 'text-indigo-600'}`}>
                 €{bill.price}
             </Text>
-            <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
-                <Path d="M10 6l6 6-6 6" stroke={'#6B7280'} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-            </Svg>
         </View>
     </TouchableOpacity>
 );
