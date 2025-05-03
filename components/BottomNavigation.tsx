@@ -66,7 +66,7 @@ export default function BottomNavigation({ activeTab }: Props) {
   );
 
   return (
-    <View className="flex-row justify-between items-center p-4 pb-10 border-t border-gray-200 bg-white">
+    <View className="w-full flex-row justify-between items-center p-4 pb-10 border-t border-gray-200 bg-white">
       {tabs.map(tab => {
         // Compare prop activeTab to tab.name exactly
         const color = tab.name === activeTab ? '#3B82F6' : '#6B7280';

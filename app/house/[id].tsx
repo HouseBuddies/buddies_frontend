@@ -137,7 +137,7 @@ const HouseDetails = () => {
           setHouse(houseResponse.data);
         }
 
-        setMatchScore((matchScore["match_score"] * 10).toFixed(2));
+        setMatchScore(Math.min(5, parseFloat((matchScore["match_score"] * 10).toFixed(2))));
         setMatchExplanation(matchScore["explanation"]);
         setIsLoading(false);
       } catch (err) {
