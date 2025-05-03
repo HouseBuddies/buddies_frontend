@@ -218,3 +218,12 @@ export async function createHouseProduct(house_id: string, payload: { created_by
     console.log("Create house product", response.data);
     return response.data;
 }
+
+export async function getHouseMatchScore(house_id: string, token: string) {
+    const response = await API.get(`/houses/${house_id}/score`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        }
+    });
+    return response.data["match_score"];
+}

@@ -6,6 +6,7 @@ import { fetchUserInfo } from "@/data/auth/auth";
 import {
   addFavoriteHouse,
   applyToJoin,
+  getHouseMatchScore,
   getUserFavoriteHouses,
   has_applyToJoin,
   removeApplyToJoin,
@@ -72,6 +73,7 @@ const HouseDetails = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [user, setUser] = useState<User | null>(null);
   const [house, setHouse] = useState<House | null>(null);
+  const [matchScore, setMatchScore] = useState<number | null>(null);
   const [favourite, setFavourite] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -109,9 +111,10 @@ const HouseDetails = () => {
       try {
         setIsLoading(true);
 
-        const [userResponse, houseResponse] = await Promise.all([
+        const [userResponse, houseResponse, matchScore] = await Promise.all([
           fetchUserInfo(token),
           showHouse(id.toString(), token),
+          getHouseMatchScore(id.toString(), token)
         ]);
 
         if (userResponse?.user) {
@@ -133,6 +136,7 @@ const HouseDetails = () => {
           setHouse(houseResponse.data);
         }
 
+        setMatchScore((matchScore * 10).toFixed(2));
         setIsLoading(false);
       } catch (err) {
         setError("Failed to load data");
@@ -400,10 +404,17 @@ const HouseDetails = () => {
               )}
             </TouchableOpacity>
           </View>
+
+          <View className="mt-4 flex">
+            <Text className="text-primary font-semibold text-2xl bg-primary/30 rounded-2xl p-4 flex w-min">
+              {matchScore}
+            </Text>
+          </View>
+
           {/* Interests Section */}
           {house?.tags && house.tags.length > 0 && (
             <View className="mt-6">
-              <Text className="text-xl mb-3">Interesses</Text>
+              <Text className="text-xl mb-3">Interests</Text>
               <View className="flex-row flex-wrap gap-2">
                 {house.tags.map((interest, index) => (
                   <View
@@ -418,7 +429,7 @@ const HouseDetails = () => {
           )}
           {/* Property Features Section */}
           <View className="mt-6">
-            <Text className="text-xl mb-3">Características específicas</Text>
+            <Text className="text-xl mb-3">Characteristics</Text>
             <View className="space-y-2">
               {[
                 "58 m² área bruta",
