@@ -3,10 +3,9 @@
 import DateTimePicker from "@react-native-community/datetimepicker"
 import Slider from "@react-native-community/slider"
 import { useState } from "react"
-import { Platform, SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native"
+import { Platform, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from "react-native"
 
 export default function LivingPreferencesScreen({ navigation, route }) {
-  const [neighborhood, setNeighborhood] = useState("")
   const [maxRent, setMaxRent] = useState(1500)
   const [moveInDate, setMoveInDate] = useState(new Date())
   const [showDatePicker, setShowDatePicker] = useState(false)
@@ -15,7 +14,6 @@ export default function LivingPreferencesScreen({ navigation, route }) {
   const handleNext = () => {
     // In a real app, you would validate and save the data
     const livingPreferences = {
-      neighborhood,
       maxRent,
       moveInDate,
       workSchedule,
@@ -35,24 +33,13 @@ export default function LivingPreferencesScreen({ navigation, route }) {
     })
   }
 
-  const isFormComplete = !!neighborhood && !!workSchedule;
+  const isFormComplete = !!workSchedule;
 
   return (
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView className="flex-1 px-6 pt-4">
 
         <Text className="text-2xl font-bold text-gray-800 mt-6 mb-8">Now, your living preferences.</Text>
-
-        {/* Preferred Neighborhood */}
-        <View className="mb-8">
-          <Text className="text-lg font-semibold text-gray-800 mb-2">City</Text>
-          <TextInput
-            className="border border-gray-300 rounded-lg px-4 py-3"
-            placeholder="Enter neighborhood or city"
-            value={neighborhood}
-            onChangeText={setNeighborhood}
-          />
-        </View>
 
         {/* Max Monthly Rent */}
         <View className="mb-8">

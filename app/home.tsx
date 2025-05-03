@@ -1,7 +1,7 @@
 import BottomNavigation from '@/components/BottomNavigation';
 import { useAuth } from '@/context/AuthContext';
 import { fetchUserInfo } from '@/data/auth/auth';
-import { addFavoriteHouse, getUserFavoriteHouses, listHouses, removeFavoriteHouse } from '@/data/houses/houses';
+import { addFavoriteHouse, getUserFavoriteHouses, listHouses, listRankedHouses, removeFavoriteHouse } from '@/data/houses/houses';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -73,20 +73,27 @@ interface PropertyCardProps {
 interface SearchBarProps {
   onMapToggle: () => void;
   isMapVisible: boolean;
+  location: string;
+  onLocationChange: (newLocation: string) => void;
+  onSearch: () => void;
 }
 
 const API_URL = Constants.expoConfig?.extra?.apiUrl || '';
 
 // SearchBar Component
-const SearchBar = ({ onMapToggle, isMapVisible }: SearchBarProps) => {
+const SearchBar = ({ onMapToggle, isMapVisible, location, onLocationChange, onSearch }: SearchBarProps) => {
   return (
     <View className="px-6 py-3 bg-gray-50 z-10">
       <View className="flex-row items-center bg-white rounded-2xl border-2 border-gray-200 overflow-hidden">
         <TextInput
           placeholder="Search location, tags, anything ..."
           className="flex-1 text-base py-4 px-6"
+          value={location}
+          onChangeText={onLocationChange}
+          returnKeyType="search"
+          onSubmitEditing={onSearch}
         />
-        <TouchableOpacity 
+        <TouchableOpacity
           className="bg-primary p-3 rounded-full mr-2"
           onPress={onMapToggle}
           accessibilityLabel={isMapVisible ? "Hide map" : "Show map"}
@@ -109,20 +116,20 @@ const SearchBar = ({ onMapToggle, isMapVisible }: SearchBarProps) => {
   );
 };
 
-const PropertyCard = ({ 
-  id, 
-  location, 
-  ownerName, 
-  minRent, 
-  maxRent, 
-  randomUserId, 
-  image, 
+const PropertyCard = ({
+  id,
+  location,
+  ownerName,
+  minRent,
+  maxRent,
+  randomUserId,
+  image,
   ownerPhoto,
-  isFavorite, 
-  onToggleFavorite 
+  isFavorite,
+  onToggleFavorite
 }: PropertyCardProps) => {
   const houseImage = `${API_URL.replace("/api", "")}${image}`;
-  
+
   const handlePress = useCallback(() => {
     router.push(`/house/${id}`);
   }, [id]);
@@ -131,7 +138,7 @@ const PropertyCard = ({
     e.stopPropagation();
     onToggleFavorite(id);
   }, [id, onToggleFavorite]);
-  
+
   return (
     <TouchableOpacity 
       className="bg-white rounded-2xl shadow-5xl mb-8 overflow-hidden" 
@@ -146,7 +153,7 @@ const PropertyCard = ({
             className="w-full h-full"
             resizeMode="cover"
           />
-          <TouchableOpacity 
+          <TouchableOpacity
             className="absolute top-4 right-4"
             onPress={handleFavoritePress}
             accessibilityLabel={isFavorite ? "Remove from favorites" : "Add to favorites"}
@@ -175,7 +182,7 @@ const PropertyCard = ({
 };
 
 const HomeScreen = () => {
-  const [token, setToken] = useState<string | null>(null);
+  const { token } = useAuth();
   const [houses, setHouses] = useState<House[]>([]);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [user, setUser] = useState<User | null>(null);
@@ -185,6 +192,7 @@ const HomeScreen = () => {
   const [isMapVisible, setIsMapVisible] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [location, setLocation] = useState('');
   const [mapSearchQuery, setMapSearchQuery] = useState('');
   const [region, setRegion] = useState({
     latitude: DEFAULT_LAT,
@@ -193,20 +201,14 @@ const HomeScreen = () => {
     longitudeDelta: 0.02,
   });
   const [showLocationNotFound, setShowLocationNotFound] = useState(false);
-  const mapRef = useRef<MapView>(null);
+  const [shouldFetchHouses, setShouldFetchHouses] = useState(false);
+  const [shouldFetchAllHouses, setShouldFetchAllHouses] = useState(false);
 
   const scrollY = useRef(new Animated.Value(0)).current;
   const pullDownAnim = useRef(new Animated.Value(0)).current;
   const keyboardAnim = useRef(new Animated.Value(0)).current;
   const notFoundPopupAnim = useRef(new Animated.Value(0)).current;
-
-  // Access auth context in useEffect to avoid rendering phase updates
-  const auth = useAuth();
-  useEffect(() => {
-    if (auth?.token) {
-      setToken(auth.token);
-    }
-  }, [auth]);
+  const mapRef = useRef<MapView>(null);
 
   // Add keyboard event listeners
   useEffect(() => {
@@ -216,7 +218,7 @@ const HomeScreen = () => {
         setKeyboardVisible(true);
         const keyboardHeight = event.endCoordinates.height;
         setKeyboardHeight(keyboardHeight);
-        
+
         Animated.timing(keyboardAnim, {
           toValue: keyboardHeight,
           duration: Platform.OS === 'ios' ? 250 : 0,
@@ -224,7 +226,7 @@ const HomeScreen = () => {
         }).start();
       }
     );
-    
+
     const keyboardWillHideSub = Keyboard.addListener(
       Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
       () => {
@@ -272,7 +274,63 @@ const HomeScreen = () => {
     return parts.slice(-2).join(' ');
   }, []);
 
-  const fetchHouses = useCallback(async () => {
+  // Fetch ranked houses based on search location
+  useEffect(() => {
+    if (shouldFetchHouses) {
+      fetchRankedHouses();
+      setShouldFetchHouses(false);
+    }
+  }, [shouldFetchHouses, location]);
+
+  // Fetch all houses without ranking
+  useEffect(() => {
+    if (shouldFetchAllHouses) {
+      fetchAllHouses();
+      setShouldFetchAllHouses(false);
+    }
+  }, [shouldFetchAllHouses]);
+
+  // New function to handle search submission
+  const handleSearch = useCallback(() => {
+    Keyboard.dismiss();
+    setShouldFetchHouses(true);
+  }, []);
+
+  const fetchRankedHouses = useCallback(async () => {
+    if (!token) {
+      setError('Authentication required');
+      setIsLoading(false);
+      return;
+    }
+
+    if(!location || location === '') {
+      // If no location provided, load all houses instead
+      setShouldFetchAllHouses(true);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const response = await listRankedHouses(token, location);
+      
+      // Add map coordinates to houses
+      const enrichedHouses = response.data.map((house: House) => ({
+        ...house,
+        randomUserId: Math.floor(Math.random() * 99),
+        latitude: house.latitude || (DEFAULT_LAT + (Math.random() - 0.5) * 0.02),
+        longitude: house.longitude || (DEFAULT_LNG + (Math.random() - 0.5) * 0.02),
+      }));
+      
+      setHouses(enrichedHouses);
+      setIsLoading(false);
+    } catch (err) {
+      console.error('Error fetching ranked houses:', err);
+      setError('Failed to load houses');
+      setIsLoading(false);
+    }
+  }, [token, location]);
+
+  const fetchAllHouses = useCallback(async () => {
     if (!token) {
       setError('Authentication required');
       setIsLoading(false);
@@ -280,6 +338,7 @@ const HomeScreen = () => {
     }
 
     try {
+      setIsLoading(true);
       const response = await listHouses(token);
       if (response?.data) {
         const sliced = response.data.slice(1, 40);
@@ -295,15 +354,17 @@ const HomeScreen = () => {
 
         setHouses(withRandoms);
       }
+      setIsLoading(false);
     } catch (err) {
-      console.error('Error fetching houses:', err);
+      console.error('Error fetching all houses:', err);
       setError('Failed to load houses');
+      setIsLoading(false);
     }
   }, [token]);
 
   const fetchUserData = useCallback(async () => {
     if (!token) return;
-    
+
     try {
       const response = await fetchUserInfo(token);
       if (response?.user) {
@@ -316,7 +377,7 @@ const HomeScreen = () => {
 
   const fetchFavorites = useCallback(async () => {
     if (!token || !user?.id) return;
-    
+
     try {
       const response = await getUserFavoriteHouses(user.id, token);
       if (response?.data) {
@@ -339,7 +400,8 @@ const HomeScreen = () => {
       }
 
       await fetchUserData();
-      await fetchHouses();
+      // Initial load - load all houses initially
+      setShouldFetchAllHouses(true);
       
       if (refresh) {
         setIsRefreshing(false);
@@ -355,35 +417,38 @@ const HomeScreen = () => {
         setIsLoading(false);
       }
     }
-  }, [fetchUserData, fetchHouses]);
+  }, [fetchUserData]);
 
   // Initial data loading
   useEffect(() => {
-    if (token) {
-      loadData();
-    }
-  }, [loadData, token]);
+    loadData();
+  }, [loadData]);
 
   // Fetch favorites when user is loaded
   useEffect(() => {
-    if (user && token) {
+    if (user) {
       fetchFavorites();
     }
-  }, [user, fetchFavorites, token]);
+  }, [user, fetchFavorites]);
 
   const handleRefresh = useCallback(() => {
     loadData(true);
-  }, [loadData]);
+    if (location) {
+      setShouldFetchHouses(true);
+    } else {
+      setShouldFetchAllHouses(true);
+    }
+  }, [loadData, location]);
 
   const toggleFavorite = useCallback(async (houseId: string) => {
     if (!token || !user?.id) {
       Alert.alert('Error', 'You need to be logged in to favorite houses');
       return;
     }
-  
+
     const isFavorite = favorites.has(houseId);
     const previousFavorites = new Set(favorites);
-  
+
     // Optimistically update UI
     const newFavorites = new Set(favorites);
     if (isFavorite) {
@@ -392,12 +457,12 @@ const HomeScreen = () => {
       newFavorites.add(houseId);
     }
     setFavorites(newFavorites);
-  
+
     try {
       const response = isFavorite
         ? await removeFavoriteHouse(houseId, user.id, token)
         : await addFavoriteHouse(houseId, user.id, token);
-  
+
       const success = isFavorite ? response.data?.value : response.data?.id;
       
       if (!success) {
@@ -419,7 +484,7 @@ const HomeScreen = () => {
   const toggleMap = useCallback(() => {
     // Dismiss keyboard when toggling map
     Keyboard.dismiss();
-    
+
     if (isMapVisible) {
       Animated.spring(pullDownAnim, {
         toValue: 0,
@@ -477,7 +542,7 @@ const HomeScreen = () => {
     Keyboard.dismiss();
   }, []);
 
-  if (isLoading && !token) {
+  if (isLoading) {
     return (
       <SafeAreaView className="flex-1 bg-gray-50 justify-center items-center">
         <ActivityIndicator size="large" color="#0000ff" />
@@ -587,25 +652,23 @@ const HomeScreen = () => {
                 onSubmitEditing={searchCity}
                 returnKeyType="search"
               />
-              {!keyboardVisible && (
-                <TouchableOpacity 
-                  className="bg-primary p-3 rounded-full mr-2"
-                  onPress={toggleMap}
-                  accessibilityLabel="Hide map"
-                >
-                  <View className="w-6 h-6 items-center justify-center">
-                    <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
-                      <Path
-                        d="M6 6l12 12M6 18L18 6"
-                        stroke="#ffffff"
-                        strokeWidth={2}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </Svg>
-                  </View>
-                </TouchableOpacity>
-              )}
+              <TouchableOpacity 
+                className="bg-primary p-3 rounded-full mr-2"
+                onPress={toggleMap}
+                accessibilityLabel="Hide map"
+              >
+                <View className="w-6 h-6 items-center justify-center">
+                <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
+                  <Path
+                    d="M6 6l12 12M6 18L18 6"
+                    stroke="#ffffff"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </Svg>
+                </View>
+              </TouchableOpacity>
             </View>
           </Animated.View>
 
@@ -644,7 +707,13 @@ const HomeScreen = () => {
           }}
         >
           {/* Main search bar with map toggle button */}
-          <SearchBar onMapToggle={toggleMap} isMapVisible={isMapVisible} />
+          <SearchBar
+            onMapToggle={toggleMap}
+            isMapVisible={isMapVisible}
+            location={location}
+            onLocationChange={setLocation}
+            onSearch={handleSearch}
+          />
           
           <Animated.ScrollView
             className="flex-1 px-6"

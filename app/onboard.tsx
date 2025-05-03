@@ -1,11 +1,11 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { SafeAreaView, StatusBar, Text, TouchableOpacity, View } from "react-native"
 
+import BiographyScreen from "@/screens/BiographyScreen"
 import DemographicsScreen from "@/screens/DemographicsScreen"
 import LivingPreferencesScreen from "@/screens/LivingPreferencesScreen"
 import PersonalityLifestyleScreen from "@/screens/PersonalityLifestyleScreen"
 import SummaryScreen from "@/screens/SummaryScreen"
-import BiographyScreen from "@/screens/BiographyScreen"
 
 const Stack = createNativeStackNavigator()
 
@@ -41,7 +41,7 @@ function WelcomeScreen({ navigation }: { navigation: any }) {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 gap-6 justify-center items-center px-6">
-        <Text className="text-4xl font-bold text-center text-primary">Buddy</Text>
+        <Text className="text-4xl font-bold text-center text-primary">Buddies</Text>
         <Text className="text-xl text-center text-gray-700">Find your perfect roommates match!</Text>
 
         <View className="w-full space-y-4">
@@ -66,14 +66,6 @@ function WelcomeScreen({ navigation }: { navigation: any }) {
             <View>
               <Text className="text-lg font-semibold text-gray-800">Personality & Lifestyle</Text>
               <Text className="text-gray-600">Habits, preferences, compatibility factors</Text>
-            </View>
-          </View>
-
-          <View className="flex-row items-center mb-4">
-            <Text className="text-3xl mr-4">💬</Text>
-            <View>
-              <Text className="text-lg font-semibold text-gray-800">About Yourself</Text>
-              <Text className="text-gray-600">Your vibe, your space, tell us about yourself,</Text>
             </View>
           </View>
         </View>

@@ -372,7 +372,7 @@ const HouseDetails = () => {
                 className="w-12 h-12 rounded-full bg-gray-200"
               />
               <Text className="ml-3 text-lg">
-                {house?.owner?.name || "Unknown Owner"}
+                {house?.owner?.name}
               </Text>
             </View>
             <TouchableOpacity
