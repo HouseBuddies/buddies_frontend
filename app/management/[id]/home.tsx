@@ -1,7 +1,7 @@
 import BottomNavigation from '@/components/BottomNavigation';
 import TopNavigation from '@/components/TopNavigations';
 import { useAuth } from '@/context/AuthContext'; // Import auth context for token
-import { getHouseBills, getHouseTasks } from '@/data/houses'; // Make sure path is correct
+import { getHouseBills, getHouseTasks, updateTask } from '@/data/houses'; // Make sure path is correct
 import Checkbox from 'expo-checkbox';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -29,7 +29,7 @@ interface Bill {
 
 const ToDoItem = ({ task, onToggle }: { task: Task; onToggle: (id: string, value: boolean) => void }) => {
     return (
-        <View className="flex-row items-center mb-2">
+        <TouchableOpacity className="flex-row items-center mb-2" onPress={() => onToggle(task.id, !task.finished)} activeOpacity={0.7}>
             <View className="h-8 w-8 rounded-full bg-purple-100 items-center justify-center mr-3">
                 <Text className="text-purple-800 font-semibold">{task.letter || task.title.charAt(0).toUpperCase()}</Text>
             </View>
@@ -47,7 +47,7 @@ const ToDoItem = ({ task, onToggle }: { task: Task; onToggle: (id: string, value
                 onValueChange={(value) => onToggle(task.id, value)}
                 color={task.finished ? '#4630EB' : undefined}
             />
-        </View>
+        </TouchableOpacity>
     );
 };
 
@@ -152,16 +152,24 @@ export default function Home() {
     console.log('Bills:', bills);
     
     // Handle task toggle
-    const handleTaskToggle = (taskId: string, finished: boolean) => {
-        setTasks(prev => 
-            prev.map(task => 
-                task.id === taskId ? { ...task, finished } : task
-            )
-        );
-        
-        // Here you would typically send an API request to update the task status
-        // For example: updateTaskStatus(taskId, finished, token);
-    };
+    const handleTaskToggle = (taskId: string, currentFinished: boolean) => {
+        const updateTaskFinish = async () => {
+          if (!token) return;
+          try {
+            const response = await updateTask(taskId, !currentFinished, token);
+            if(response?.data) {
+              setTasks(prev =>
+                prev.map(task =>
+                  task.id === taskId ? { ...task, finished: !currentFinished } : task
+                )
+              );
+            }
+          } catch (error) {
+            console.error('Error updating task:', error);
+          }
+        }
+        updateTaskFinish();
+      };
     
     // Handle tab change
     const handleTabChange = (route: string) => {
@@ -195,7 +203,7 @@ export default function Home() {
                                 <ToDoItem 
                                     key={task.id} 
                                     task={task} 
-                                    onToggle={handleTaskToggle} 
+                                    onToggle={() => handleTaskToggle(task.id, task.finished)}
                                 />
                             ))
                         ) : (

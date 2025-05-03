@@ -1,10 +1,11 @@
 // BillSplitterScreen.jsx
 import BottomNavigation from '@/components/BottomNavigation';
 import TopNavigation from '@/components/TopNavigations';
+import { useAuth } from '@/context/AuthContext'; // You'll need to create/import your auth context
+import { getHouseBills } from '@/data/houses'; // Adjust the import based on your project structure
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
-//  components
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 // Sample user data
 const INITIAL_USERS = [
@@ -14,47 +15,10 @@ const INITIAL_USERS = [
     { id: '4', name: 'Jordan', color: '#C6F6D5', paid: 0, owes: 0 },
 ];
 
-// Sample expenses
-const INITIAL_EXPENSES = [
-    {
-        id: '1',
-        description: 'Dinner',
-        amount: 120.00,
-        paidBy: '1',
-        date: '2025-05-01',
-        splitType: 'equal',
-        splitWith: ['1', '2', '3', '4'],
-        customSplits: {}
-    },
-    {
-        id: '2',
-        description: 'Movie tickets',
-        amount: 42.50,
-        paidBy: '2',
-        date: '2025-05-01',
-        splitType: 'equal',
-        splitWith: ['1', '2', '3'],
-        customSplits: {}
-    },
-    {
-        id: '3',
-        description: 'Groceries',
-        amount: 87.35,
-        paidBy: '3',
-        date: '2025-04-30',
-        splitType: 'custom',
-        splitWith: ['1', '3', '4'],
-        customSplits: {
-            '1': 25.00,
-            '3': 37.35,
-            '4': 25.00
-        }
-    },
-];
 
 // Currency formatter
 const formatCurrency = (amount) => {
-    return `$${amount.toFixed(2)}`;
+    return `$${parseFloat(amount).toFixed(2)}`;
 };
 
 // Avatar component for users
@@ -75,9 +39,9 @@ const UserAvatar = ({ user, size = 'md', isSelected, onPress }) => {
 
 // Component for expense item
 const ExpenseItem = ({ expense, users, onPress }) => {
-    const paidByUser = users.find(user => user.id === expense.paidBy);
-    const formattedDate = new Date(expense.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    const splitCount = expense.splitWith.length;
+    const paidByUser = users.find(user => user.id === expense.paidBy) || users[0]; // Default to first user if not found
+    const formattedDate = new Date(expense.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const splitCount = expense.splitWith ? expense.splitWith.length : users.length;
 
     return (
         <TouchableOpacity
@@ -86,7 +50,7 @@ const ExpenseItem = ({ expense, users, onPress }) => {
         >
             <View className="flex-row justify-between items-center mb-2">
                 <Text className="font-semibold text-lg">{expense.description}</Text>
-                <Text className="font-bold text-lg">{formatCurrency(expense.amount)}</Text>
+                <Text className="font-bold text-lg">{formatCurrency(expense.price)}</Text>
             </View>
 
             <View className="flex-row justify-between items-center">
@@ -102,26 +66,23 @@ const ExpenseItem = ({ expense, users, onPress }) => {
             <View className="mt-2 pt-2 border-t border-gray-100">
                 <View className="flex-row justify-between items-center">
                     <Text className="text-sm text-gray-500">
-                        {expense.splitType === 'equal'
-                            ? `Split equally between ${splitCount} people`
-                            : 'Split custom amounts'}
+                        {expense.splitType === 'custom'
+                            ? 'Split custom amounts'
+                            : `Split equally between ${splitCount} people`}
                     </Text>
                     <View className="flex-row">
-                        {expense.splitWith.slice(0, 3).map(userId => {
-                            const user = users.find(u => u.id === userId);
-                            return (
-                                <View
-                                    key={userId}
-                                    className="ml-1"
-                                    style={{ marginLeft: -4 }}
-                                >
-                                    <UserAvatar user={user} size="sm" />
-                                </View>
-                            );
-                        })}
-                        {expense.splitWith.length > 3 && (
+                        {users.slice(0, 3).map(user => (
+                            <View
+                                key={user.id}
+                                className="ml-1"
+                                style={{ marginLeft: -4 }}
+                            >
+                                <UserAvatar user={user} size="sm" />
+                            </View>
+                        ))}
+                        {users.length > 3 && (
                             <View className="ml-1 w-6 h-6 rounded-full bg-gray-200 items-center justify-center">
-                                <Text className="text-xs text-gray-600">+{expense.splitWith.length - 3}</Text>
+                                <Text className="text-xs text-gray-600">+{users.length - 3}</Text>
                             </View>
                         )}
                     </View>
@@ -135,9 +96,9 @@ const ExpenseItem = ({ expense, users, onPress }) => {
 const NewExpenseModal = ({ visible, onClose, onSave, users }) => {
     const [expense, setExpense] = useState({
         description: '',
-        amount: '',
+        price: '',
         paidBy: users[0].id,
-        date: new Date().toISOString().split('T')[0],
+        due_date: new Date().toISOString(),
         splitType: 'equal',
         splitWith: users.map(user => user.id),
         customSplits: {}
@@ -147,11 +108,11 @@ const NewExpenseModal = ({ visible, onClose, onSave, users }) => {
     const [remainingAmount, setRemainingAmount] = useState(0);
 
     useEffect(() => {
-        if (expense.splitType === 'custom' && expense.amount) {
+        if (expense.splitType === 'custom' && expense.price) {
             const totalCustom = Object.values(customAmounts).reduce((sum, val) => sum + (parseFloat(val) || 0), 0);
-            setRemainingAmount(parseFloat(expense.amount) - totalCustom);
+            setRemainingAmount(parseFloat(expense.price) - totalCustom);
         }
-    }, [customAmounts, expense.amount, expense.splitType]);
+    }, [customAmounts, expense.price, expense.splitType]);
 
     const handleToggleUser = (userId) => {
         const isSelected = expense.splitWith.includes(userId);
@@ -171,20 +132,20 @@ const NewExpenseModal = ({ visible, onClose, onSave, users }) => {
     };
 
     const handleSave = () => {
-        // Validate amount
-        if (!expense.description || !expense.amount || parseFloat(expense.amount) <= 0) {
+        // Validate price
+        if (!expense.description || !expense.price || parseFloat(expense.price) <= 0) {
             alert('Please enter a valid description and amount');
             return;
         }
 
         // Finalize custom splits if using custom split
-        let finalExpense = { ...expense, amount: parseFloat(expense.amount) };
+        let finalExpense = { ...expense, price: parseFloat(expense.price) };
         if (expense.splitType === 'custom') {
             finalExpense.customSplits = { ...customAmounts };
 
             // Check if all split amounts match total
             const totalSplit = Object.values(customAmounts).reduce((sum, val) => sum + (parseFloat(val) || 0), 0);
-            if (Math.abs(totalSplit - parseFloat(expense.amount)) > 0.01) {
+            if (Math.abs(totalSplit - parseFloat(expense.price)) > 0.01) {
                 alert('Custom split amounts must add up to the total amount');
                 return;
             }
@@ -198,9 +159,9 @@ const NewExpenseModal = ({ visible, onClose, onSave, users }) => {
     const resetForm = () => {
         setExpense({
             description: '',
-            amount: '',
+            price: '',
             paidBy: users[0].id,
-            date: new Date().toISOString().split('T')[0],
+            due_date: new Date().toISOString(),
             splitType: 'equal',
             splitWith: users.map(user => user.id),
             customSplits: {}
@@ -261,8 +222,8 @@ const NewExpenseModal = ({ visible, onClose, onSave, users }) => {
                                 className="border border-gray-300 rounded-lg p-3"
                                 placeholder="0.00"
                                 keyboardType="decimal-pad"
-                                value={expense.amount}
-                                onChangeText={(text) => setExpense({ ...expense, amount: text })}
+                                value={expense.price}
+                                onChangeText={(text) => setExpense({ ...expense, price: text })}
                             />
                         </View>
 
@@ -318,7 +279,7 @@ const NewExpenseModal = ({ visible, onClose, onSave, users }) => {
                             />
                         </View>
 
-                        {expense.splitType === 'custom' && expense.amount && (
+                        {expense.splitType === 'custom' && expense.price && (
                             <View className="mb-4">
                                 <View className="flex-row justify-between mb-2">
                                     <Text className="font-medium">Custom Split</Text>
@@ -432,21 +393,57 @@ const UserSummaryCard = ({ user, totalPaid, totalOwes, netBalance }) => {
 // Main Bill Splitter component
 const BillSplitterScreen = () => {
     const [users, setUsers] = useState(INITIAL_USERS);
-    const [expenses, setExpenses] = useState(INITIAL_EXPENSES);
+    const [expenses, setExpenses] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [newExpenseModalVisible, setNewExpenseModalVisible] = useState(false);
     const [activeTab, setActiveTab] = useState('expenses'); // 'expenses' or 'settle'
-    const [activeTab2, setActiveTab2] = useState('bills')
+    const [activeTab2, setActiveTab2] = useState('bills');
     const [userSummaries, setUserSummaries] = useState([]);
     const [settlements, setSettlements] = useState([]);
     const { id } = useLocalSearchParams();
+    const { token } = useAuth(); // Assuming you have an AuthContext that provides the token
 
-    const handleTabChange = (route: string) => {
+    const handleTabChange = (route) => {
         router.push(`/management/${id}/${route}`);
     };
 
+    // Fetch bills data from API
     useEffect(() => {
-        calculateBalances();
-    }, [expenses]);
+        const fetchBills = async () => {
+            try {
+                setIsLoading(true);
+                const billsData = await getHouseBills(id, token);
+
+                // Transform API data to match our expense structure
+                const transformedExpenses = billsData.data.map(bill => ({
+                    id: bill.id,
+                    description: bill.description,
+                    price: bill.price,
+                    due_date: bill.due_date,
+                    paidBy: users[0].id, // Default to first user since API doesn't specify
+                    splitType: 'equal',
+                    splitWith: users.map(user => user.id) // Default to all users
+                }));
+
+                setExpenses(transformedExpenses);
+            } catch (error) {
+                console.error("Error fetching bills:", error);
+                alert("Failed to load bills. Please try again later.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        if (id && token) {
+            fetchBills();
+        }
+    }, [id, token]);
+
+    useEffect(() => {
+        if (!isLoading) {
+            calculateBalances();
+        }
+    }, [expenses, isLoading]);
 
     const calculateBalances = () => {
         // Reset all user balances
@@ -459,8 +456,8 @@ const BillSplitterScreen = () => {
         // Calculate what each user paid and owes
         expenses.forEach(expense => {
             const paidBy = expense.paidBy;
-            const paidAmount = expense.amount;
-            const splitWith = expense.splitWith;
+            const paidAmount = parseFloat(expense.price);
+            const splitWith = expense.splitWith || users.map(user => user.id);
 
             // Add to paid amount
             const paidByUser = updatedUsers.find(u => u.id === paidBy);
@@ -469,7 +466,7 @@ const BillSplitterScreen = () => {
             }
 
             // Calculate what each person owes
-            if (expense.splitType === 'equal') {
+            if (!expense.splitType || expense.splitType === 'equal') {
                 const splitAmount = paidAmount / splitWith.length;
                 splitWith.forEach(userId => {
                     const user = updatedUsers.find(u => u.id === userId);
@@ -483,7 +480,7 @@ const BillSplitterScreen = () => {
                 });
             } else {
                 // Handle custom splits
-                Object.entries(expense.customSplits).forEach(([userId, amount]) => {
+                Object.entries(expense.customSplits || {}).forEach(([userId, amount]) => {
                     const user = updatedUsers.find(u => u.id === userId);
                     if (user && userId !== paidBy) {
                         user.owes += parseFloat(amount);
@@ -545,14 +542,24 @@ const BillSplitterScreen = () => {
         setSettlements(settlements);
     };
 
-    const addNewExpense = (expense) => {
-        const newExpense = {
-            ...expense,
-            id: `${expenses.length + 1}`,
-            amount: parseFloat(expense.amount)
-        };
+    const addNewExpense = async (expense) => {
+        try {
+            // Here you would typically call your API to create a new bill
+            // const response = await API.post(`/houses/${id}/bills`, expense, {
+            //     headers: { Authorization: `Bearer ${token}` }
+            // });
 
-        setExpenses([...expenses, newExpense]);
+            // For now, just add it to the local state
+            const newExpense = {
+                ...expense,
+                id: `temp-${Date.now()}`, // Temporary ID until we get one from the API
+            };
+
+            setExpenses([...expenses, newExpense]);
+        } catch (error) {
+            console.error("Error adding new expense:", error);
+            alert("Failed to add expense. Please try again.");
+        }
     };
 
     return (
@@ -562,17 +569,19 @@ const BillSplitterScreen = () => {
                 <Text className="text-2xl font-bold mb-4">Split Bills</Text>
 
                 {/* User summaries */}
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
-                    {userSummaries.map(user => (
-                        <UserSummaryCard
-                            key={user.id}
-                            user={user}
-                            totalPaid={user.paid}
-                            totalOwes={user.owes}
-                            netBalance={user.netBalance}
-                        />
-                    ))}
-                </ScrollView>
+                {!isLoading && (
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
+                        {userSummaries.map(user => (
+                            <UserSummaryCard
+                                key={user.id}
+                                user={user}
+                                totalPaid={user.paid}
+                                totalOwes={user.owes}
+                                netBalance={user.netBalance}
+                            />
+                        ))}
+                    </ScrollView>
+                )}
 
                 {/* Tab navigation */}
                 <View className="flex-row border-b border-gray-200">
@@ -601,17 +610,26 @@ const BillSplitterScreen = () => {
             </View>
 
             <ScrollView className="flex-1 p-4">
-                {activeTab === 'expenses' ? (
-                    <>
-                        {expenses.map(expense => (
+                {isLoading ? (
+                    <View className="flex-1 justify-center items-center py-10">
+                        <ActivityIndicator size="large" color="#3b82f6" />
+                        <Text className="mt-4 text-gray-600">Loading expenses...</Text>
+                    </View>
+                ) : activeTab === 'expenses' ? (
+                    expenses.length > 0 ? (
+                        expenses.map(expense => (
                             <ExpenseItem
                                 key={expense.id}
                                 expense={expense}
                                 users={users}
-                                onPress={() => { }}
+                                onPress={() => { /* Handle expense selection */ }}
                             />
-                        ))}
-                    </>
+                        ))
+                    ) : (
+                        <View className="flex-1 justify-center items-center py-10">
+                            <Text className="text-gray-500">No expenses found. Add one!</Text>
+                        </View>
+                    )
                 ) : (
                     <SettlementView
                         users={users}

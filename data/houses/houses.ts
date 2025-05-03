@@ -51,6 +51,7 @@ export async function getUserFavoriteHouses(user_id : string, token : string) {
             Authorization: `Bearer ${token}`,
         }
     })
+    console.log("User favorite houses", response.data);
     return response.data;
 }
 
@@ -122,5 +123,27 @@ export async function getHouseBills(house_id: string, token: string) {
         }
     });
     console.log("House bills", response.data);
+    return response.data;
+}
+
+export async function getHouseActivities(house_id: string, token: string) {
+    const response = await API.get(`/houses/${house_id}/activities`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        }
+    });
+    console.log("House activities", response.data);
+    return response.data;
+}
+
+export async function updateTask(task_id: string, finished: boolean, token: string) {
+    const response = await API.put(`/tasks/${task_id}`, {
+        finished
+    }, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        }
+    });
+    console.log("Update task", response.data);
     return response.data;
 }

@@ -1,7 +1,7 @@
 import BottomNavigation from '@/components/BottomNavigation';
 import TopNavigation from '@/components/TopNavigations';
 import { useAuth } from '@/context/AuthContext'; // Import auth context for token
-import { getHouseTasks } from '@/data/houses'; // Import the task fetching function
+import { getHouseTasks, updateTask } from '@/data/houses'; // Import the task fetching function
 import Checkbox from 'expo-checkbox';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -53,14 +53,22 @@ export default function TodoList() {
 
   // Toggle task completed status
   const toggleTask = (taskId: string, currentFinished: boolean) => {
-    setTasks(prev =>
-      prev.map(task =>
-        task.id === taskId ? { ...task, finished: !currentFinished } : task
-      )
-    );
-    
-    // Here you would typically send an API request to update the task status
-    // For example: updateTaskStatus(taskId, !currentFinished, token);
+    const updateTaskFinish = async () => {
+      if (!token) return;
+      try {
+        const response = await updateTask(taskId, !currentFinished, token);
+        if(response?.data) {
+          setTasks(prev =>
+            prev.map(task =>
+              task.id === taskId ? { ...task, finished: !currentFinished } : task
+            )
+          );
+        }
+      } catch (error) {
+        console.error('Error updating task:', error);
+      }
+    }
+    updateTaskFinish();
   };
 
   const handleTabChange = (route: string) => {

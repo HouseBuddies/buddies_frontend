@@ -1,6 +1,6 @@
 import BottomNavigation from '@/components/BottomNavigation';
 import { useAuth } from '@/context/AuthContext';
-import { fetchUserInfo } from '@/data/auth/auth';
+import { fetchUserInfo, sign_out } from '@/data/auth/auth';
 import { Feather } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Image, SafeAreaView, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native';
@@ -69,9 +69,15 @@ const SettingsScreen = () => {
           text: "Logout", 
           style: "destructive",
           onPress: () => {
-            // Call logout function from AuthContext
-            // Assuming logout function exists in AuthContext
-            console.log('Logout pressed');
+            async () => {
+              if (!token) return;
+              try {
+                await sign_out(token);
+                console.log('Logged out successfully');
+              } catch (err) {
+                console.error('Error logging out:', err);
+              }
+            }
           }
         }
       ]

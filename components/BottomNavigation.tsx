@@ -17,7 +17,7 @@ const BottomNavigation = () => {
           router.push("/management")
           break
         case "favorites":
-          router.push("/")
+          router.push("/favorites")
           break
         case "messages":
           router.push("/")
