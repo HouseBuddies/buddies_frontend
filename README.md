@@ -1,50 +1,47 @@
-# Welcome to your Expo app 👋
+![Buddies](.github/assets/banner.png)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+<p align="center">
+  <b>🏅 4th place project</b> of the <a href="https://shiftappens.com">Shift APPens Hackathon</a>, 11th edition
+</p>
 
-## Get started
+# Buddies 🏠
 
-1. Install dependencies
+> A platform that reimagines co-living for students and young professionals.
 
-   ```bash
-   npm install
-   ```
+**Buddies** is a platform that reimagines co-living by connecting people and homeowners with like-minded individuals who share similar interests and lifestyles. It helps foster a more welcoming, enjoyable, and harmonious living environment by emphasizing compatibility and community from the start.
 
-2. Start the app
+Beyond matching housemates, **Buddies** functions as a centralized house management app—offering tools to organize chores, split bills, and streamline communication. 
 
-   ```bash
-   npx expo start
-   ```
+By combining social compatibility with smart house management, **Buddies** reduces friction, improves tenant satisfaction, and creates homes where people actually want to live.
 
-In the output, you'll find options to open the app in a
+## Setup and running 🚀
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+> [!IMPORTANT]
+> **Note**: This repository contains only the frontend. You'll also need to run the [Buddies backend](https://github.com/HouseBuddies/buddies_backend).
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+Firstly, install all required dependencies.
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Create a `.env.local` file in the project root with the following:
+```
+API_URL=<your-backend-api-url>
+GOOGLE_API_KEY=<google-maps-project-api-key>
+```
 
-## Learn more
+And finally, start the application.
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+npx expo start
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Team 💪
 
-## Join the community
+Built with passion at Shift APPens by a team of four dedicated shifters:
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- [Afonso Santos](https://github.com/afonso-santos)
+- [João Lobo](https://github.com/joaodiaslobo)
+- [Júlio Pinto](https://github.com/juliojpinto)
+- [Mário Rodrigues](https://github.com/mariorodrigues10)
